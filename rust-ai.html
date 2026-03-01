@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUST AI — Ассистент разработчика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0d0b;
+  --bg2:       #131310;
+  --bg3:       #1a1a16;
+  --border:    #2a2a22;
+  --border2:   #3a3a2e;
+  --accent:    #c8572a;
+  --accent2:   #e8703a;
+  --glow:      rgba(200,87,42,0.15);
+  --green:     #4caf50;
+  --text:      #e8e4dc;
+  --muted:     #7a7a66;
+  --mono:      'Share Tech Mono', monospace;
+  --title:     'Rajdhani', sans-serif;
+  --body:      'Exo 2', sans-serif;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── ФОНОВАЯ ТЕКСТУРА ──────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── ШАПКА ─────────────────────────────────────────── */
+header {
+  position: relative; z-index: 10;
+  height: 56px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.header-logo {
+  display: flex; align-items: center; gap: 0.6rem;
+}
+
+.logo-icon {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  color: #fff;
+  font-family: var(--mono);
+  animation: pulse-logo 3s ease-in-out infinite;
+}
+
+@keyframes pulse-logo {
+  0%,100% { filter: drop-shadow(0 0 4px rgba(200,87,42,0.6)); }
+  50%      { filter: drop-shadow(0 0 12px rgba(200,87,42,0.9)); }
+}
+
+.logo-text {
+  font-family: var(--title);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.logo-text span { color: var(--accent); }
+
+.header-status {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+.header-model {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  border: 1px solid var(--border2);
+  padding: 0.2em 0.6em;
+  border-radius: 2px;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative; z-index: 1;
+}
+
+/* ── САЙДБАР ────────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-section {
+  padding: 0.75rem 1rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-btn {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  font-family: var(--body);
+  font-size: 0.82rem;
+  color: var(--muted);
+  cursor: pointer;
+  border: none; background: none;
+  width: 100%; text-align: left;
+  transition: background 0.15s, color 0.15s;
+  border-bottom: 1px solid transparent;
+}
+.sidebar-btn:hover { background: var(--bg3); color: var(--text); }
+.sidebar-btn.active {
+  background: var(--glow);
+  color: var(--accent2);
+  border-bottom-color: var(--border);
+}
+
+.sidebar-btn-icon { font-size: 0.9rem; }
+
+.new-chat-btn {
+  margin: 1rem;
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent2);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.new-chat-btn:hover {
+  background: var(--glow);
+  box-shadow: 0 0 12px rgba(200,87,42,0.2);
+}
+
+.sidebar-topics { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
+
+.sidebar-topics::-webkit-scrollbar { width: 3px; }
+.sidebar-topics::-webkit-scrollbar-track { background: transparent; }
+.sidebar-topics::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.topic-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, padding-left 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 2px solid transparent;
+}
+.topic-item:hover { color: var(--text); padding-left: 1.2rem; border-left-color: var(--accent); }
+
+.sidebar-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  display: flex; flex-direction: column; gap: 0.3rem;
+}
+
+/* ── ЧАТ ────────────────────────────────────────────── */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Приветственный экран */
+.welcome-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.welcome-hex {
+  width: 70px; height: 70px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  animation: pulse-logo 3s ease-in-out infinite;
+}
+
+.welcome-title {
+  font-family: var(--title);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.welcome-title span { color: var(--accent); }
+
+.welcome-sub {
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-width: 420px;
+  line-height: 1.7;
+}
+
+.quick-prompts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  max-width: 560px;
+  width: 100%;
+}
+
+.quick-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 0.9rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.quick-btn:hover {
+  border-color: var(--accent);
+  background: var(--glow);
+  transform: translateY(-2px);
+}
+.quick-btn strong {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--accent2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+/* Сообщения */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  display: none;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.message {
+  display: flex;
+  gap: 1rem;
+  animation: msgIn 0.3s ease;
+}
+@keyframes msgIn {
+  from { opacity:0; transform: translateY(8px); }
+  to   { opacity:1; transform: none; }
+}
+
+.msg-avatar {
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+.msg-avatar.ai   { background: var(--accent); color: #fff; }
+.msg-avatar.user { background: var(--bg3); border: 1px solid var(--border2); color: var(--muted); }
+
+.msg-body { flex: 1; min-width: 0; }
+
+.msg-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.msg-name {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.msg-name.ai { color: var(--accent2); }
+.msg-name.user { color: var(--muted); }
+
+.msg-time {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.msg-text {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.msg-text code {
+  font-family: var(--mono);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 0.1em 0.4em;
+  font-size: 0.82em;
+  color: var(--accent2);
+}
+
+.msg-text pre {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #b8e4a8;
+}
+
+/* Печатает... */
+.typing-indicator {
+  display: flex; gap: 4px; align-items: center;
+  padding: 0.5rem 0;
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%,80%,100% { transform: translateY(0); opacity:0.4; }
+  40%          { transform: translateY(-6px); opacity:1; }
+}
+
+/* ── ПОЛЕ ВВОДА ─────────────────────────────────────── */
+.input-area {
+  padding: 1rem 1.5rem 1.2rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.input-wrapper {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.6rem 0.6rem 0.6rem 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(200,87,42,0.2);
+}
+
+#chatInput {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  resize: none;
+  max-height: 120px;
+  min-height: 22px;
+}
+#chatInput::placeholder { color: var(--muted); }
+
+.send-btn {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.send-btn:hover { background: var(--accent2); transform: scale(1.05); }
+.send-btn:active { transform: scale(0.95); }
+.send-btn svg { width: 16px; height: 16px; fill: #fff; }
+
+.input-hint {
+  display: flex; justify-content: space-between;
+  margin-top: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+/* ── КОНТЕКСТ СИСТЕМЫ ───────────────────────────────── */
+.system-bar {
+  padding: 0.4rem 1.5rem;
+  background: rgba(200,87,42,0.06);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.system-bar-dot {
+  width: 5px; height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* ── СКРОЛЛБАР ──────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+</style>
+</head>
+<body>
+
+<!-- ШАПКА -->
+<header>
+  <div class="header-logo">
+    <div class="logo-icon">R</div>
+    <div class="logo-text"><span>RUST</span> AI</div>
+  </div>
+  <div class="header-model">claude-sonnet-4</div>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    ONLINE
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- САЙДБАР -->
+  <aside class="sidebar">
+    <div class="sidebar-section">Режим</div>
+    <button class="sidebar-btn active" onclick="setMode(this, 'plugin')">
+      <span class="sidebar-btn-icon">🔧</span> Плагины Oxide
+    </button>
+    <button class="sidebar-btn" onclick="setMode(this, 'game')">
+      <span class="sidebar-btn-icon">🎮</span> Вопросы по Rust
+    </button>
+    <button class="sidebar-btn" onclick="setMode(this, 'server')">
+      <span class="sidebar-btn-icon">⚙️</span> Настройка сервера
+    </button>
+    <button class="sidebar-btn" onclick="setMode(this, 'code')">
+      <span class="sidebar-btn-icon">💻</span> C# / Код
+    </button>
+
+    <button class="new-chat-btn" onclick="newChat()">+ Новый чат</button>
+
+    <div class="sidebar-section" style="margin-top:0">История</div>
+    <div class="sidebar-topics" id="history">
+      <div class="topic-item">WipeBlock UI таймер</div>
+      <div class="topic-item">Как заблокировать rifle.ak</div>
+      <div class="topic-item">Полоса прогресса CUI</div>
+      <div class="topic-item">Команда /wb setwipe</div>
+      <div class="topic-item">Сайт на GitHub Pages</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <span>RUST AI v1.0</span>
+      <span style="color:var(--accent)">Oxide / uMod</span>
+    </div>
+  </aside>
+
+  <!-- ЧАТ -->
+  <div class="chat-area">
+
+    <div class="system-bar">
+      <div class="system-bar-dot"></div>
+      <span id="systemLabel">Режим: Разработка плагинов Oxide/uMod для Rust</span>
+    </div>
+
+    <!-- Приветствие -->
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-hex">⚡</div>
+      <div>
+        <div class="welcome-title">RUST <span>AI</span></div>
+        <div class="welcome-sub">Ассистент по разработке плагинов Oxide, настройке серверов и всему что связано с Rust.</div>
+      </div>
+      <div class="quick-prompts">
+        <button class="quick-btn" onclick="quickPrompt(this)">
+          <strong>🔧 Плагин</strong>
+          Создай шаблон плагина WipeBlock с UI
+        </button>
+        <button class="quick-btn" onclick="quickPrompt(this)">
+          <strong>🛡️ Блокировка</strong>
+          Как заблокировать предмет по shortname?
+        </button>
+        <button class="quick-btn" onclick="quickPrompt(this)">
+          <strong>🎨 CUI</strong>
+          Как сделать красивый интерфейс в Rust?
+        </button>
+        <button class="quick-btn" onclick="quickPrompt(this)">
+          <strong>⚙️ Сервер</strong>
+          Как настроить oxide.permissions?
+        </button>
+      </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div class="messages" id="messages"></div>
+
+    <!-- Поле ввода -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea id="chatInput" rows="1" placeholder="Спроси что-нибудь про Rust плагины..."></textarea>
+        <button class="send-btn" onclick="sendMessage()" id="sendBtn">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">
+        <span>Enter — отправить &nbsp;·&nbsp; Shift+Enter — новая строка</span>
+        <span id="charCount">0 / 2000</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Состояние ──────────────────────────────────────────
+let currentMode = 'plugin';
+let chatHistory = [];
+let isLoading   = false;
+
+const SYSTEM_PROMPTS = {
+  plugin: `Ты — эксперт по разработке плагинов Oxide/uMod для игры Rust. 
+Отвечай на русском языке. Пиши чистый, рабочий C# код для Rust плагинов. 
+Объясняй как хуки Oxide, CUI интерфейс, конфигурация, разрешения. 
+Форматируй код в блоки. Будь конкретным и практичным.`,
+
+  game: `Ты — эксперт по игре Rust. Отвечай на русском языке. 
+Помогай с игровыми механиками, крафтом, стратегиями, базостроением. 
+Давай конкретные практические советы.`,
+
+  server: `Ты — эксперт по администрированию серверов Rust. Отвечай на русском языке.
+Помогай с настройкой server.cfg, oxide, плагинами, правами доступа, оптимизацией.`,
+
+  code: `Ты — эксперт по C# программированию, особенно в контексте Rust/Oxide. 
+Отвечай на русском языке. Пиши чистый код, объясняй паттерны и практики разработки плагинов.`
+};
+
+const SYSTEM_LABELS = {
+  plugin: 'Режим: Разработка плагинов Oxide/uMod для Rust',
+  game:   'Режим: Вопросы по игре Rust',
+  server: 'Режим: Администрирование и настройка сервера',
+  code:   'Режим: C# программирование'
+};
+
+// ── Режимы ──────────────────────────────────────────────
+function setMode(btn, mode) {
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMode = mode;
+  document.getElementById('systemLabel').textContent = SYSTEM_LABELS[mode];
+}
+
+// ── Быстрые промпты ─────────────────────────────────────
+function quickPrompt(btn) {
+  const text = btn.querySelector('strong').nextSibling.textContent.trim();
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+// ── Новый чат ───────────────────────────────────────────
+function newChat() {
+  chatHistory = [];
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('messages').style.display = 'none';
+  document.getElementById('welcomeScreen').style.display = 'flex';
+}
+
+// ── Авто-высота textarea ────────────────────────────────
+const input = document.getElementById('chatInput');
+input.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  document.getElementById('charCount').textContent = this.value.length + ' / 2000';
+});
+
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// ── Отправка сообщения ──────────────────────────────────
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  // Скрываем приветствие
+  document.getElementById('welcomeScreen').style.display = 'none';
+  const messages = document.getElementById('messages');
+  messages.style.display = 'flex';
+
+  // Добавляем в историю
+  chatHistory.push({ role: 'user', content: text });
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('charCount').textContent = '0 / 2000';
+
+  // Рендерим сообщение пользователя
+  appendMessage('user', text);
+
+  // Индикатор загрузки
+  const typingEl = appendTyping();
+  isLoading = true;
+  document.getElementById('sendBtn').style.opacity = '0.5';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPTS[currentMode],
+        messages: chatHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || 'Ошибка получения ответа.';
+
+    // Добавляем ответ в историю
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    typingEl.remove();
+    appendMessage('ai', reply);
+
+    // Сохраняем в историю сайдбара
+    addToHistory(text);
+
+  } catch (err) {
+    typingEl.remove();
+    appendMessage('ai', '⚠️ Ошибка подключения к API. Проверь соединение.');
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').style.opacity = '1';
+}
+
+// ── Рендер сообщения ────────────────────────────────────
+function appendMessage(role, text) {
+  const messages = document.getElementById('messages');
+  const now = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+
+  const isAI = role === 'ai';
+  const div = document.createElement('div');
+  div.className = 'message';
+  div.innerHTML = `
+    <div class="msg-avatar ${role}">${isAI ? 'AI' : 'ME'}</div>
+    <div class="msg-body">
+      <div class="msg-header">
+        <span class="msg-name ${role}">${isAI ? 'RUST AI' : 'ВЫ'}</span>
+        <span class="msg-time">${now}</span>
+      </div>
+      <div class="msg-text">${formatText(text)}</div>
+    </div>
+  `;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+// ── Индикатор печати ────────────────────────────────────
+function appendTyping() {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message';
+  div.innerHTML = `
+    <div class="msg-avatar ai">AI</div>
+    <div class="msg-body">
+      <div class="msg-header">
+        <span class="msg-name ai">RUST AI</span>
+      </div>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+  `;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+// ── Форматирование текста ───────────────────────────────
+function formatText(text) {
+  // Код блоки ```
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre>${escHtml(code.trim())}</pre>`
+  );
+  // Инлайн код
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Жирный
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Переносы строк
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── История в сайдбаре ───────────────────────────────────
+function addToHistory(text) {
+  const historyEl = document.getElementById('history');
+  const item = document.createElement('div');
+  item.className = 'topic-item';
+  item.textContent = text.length > 35 ? text.substring(0, 34) + '…' : text;
+  historyEl.insertBefore(item, historyEl.firstChild);
+}
+</script>
+</body>
+</html>
