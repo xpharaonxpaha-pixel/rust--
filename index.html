@@ -3,782 +3,1195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>index.html — Ассистент разработчика</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Claude — AI от Anthropic</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiempos+Headline:wght@400;500&family=Styrene+A:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1915;
+    --surface: #232220;
+    --surface2: #2d2b28;
+    --border: #3a3834;
+    --text-primary: #f0ece3;
+    --text-secondary: #9c9689;
+    --text-muted: #5c5a55;
+    --accent: #d97757;
+    --accent2: #cc785c;
+    --accent-soft: rgba(217,119,87,0.12);
+    --accent-glow: rgba(217,119,87,0.05);
+    --radius: 14px;
+  }
 
-:root {
-  --bg:        #0d0d0b;
-  --bg2:       #131310;
-  --bg3:       #1a1a16;
-  --border:    #2a2a22;
-  --border2:   #3a3a2e;
-  --accent:    #c8572a;
-  --accent2:   #e8703a;
-  --glow:      rgba(200,87,42,0.15);
-  --green:     #4caf50;
-  --text:      #e8e4dc;
-  --muted:     #7a7a66;
-  --mono:      'Share Tech Mono', monospace;
-  --title:     'Rajdhani', sans-serif;
-  --body:      'Exo 2', sans-serif;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
 
-html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Styrene A', 'DM Sans', system-ui, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-body {
-  font-family: var(--body);
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-}
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
 
-/* ── ФОНОВАЯ ТЕКСТУРА ──────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
-  pointer-events: none;
-  z-index: 0;
-}
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(26,25,21,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
 
-/* ── ШАПКА ─────────────────────────────────────────── */
-header {
-  position: relative; z-index: 10;
-  height: 56px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
-  padding: 0 1.5rem;
-  gap: 1rem;
-  flex-shrink: 0;
-}
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
 
-.header-logo {
-  display: flex; align-items: center; gap: 0.6rem;
-}
+  .nav-logo svg { width: 28px; height: 28px; }
 
-.logo-icon {
-  width: 28px; height: 28px;
-  background: var(--accent);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.7rem;
-  color: #fff;
-  font-family: var(--mono);
-  animation: pulse-logo 3s ease-in-out infinite;
-}
+  .nav-logo span {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
 
-@keyframes pulse-logo {
-  0%,100% { filter: drop-shadow(0 0 4px rgba(200,87,42,0.6)); }
-  50%      { filter: drop-shadow(0 0 12px rgba(200,87,42,0.9)); }
-}
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+  }
 
-.logo-text {
-  font-family: var(--title);
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.logo-text span { color: var(--accent); }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    transition: color 0.2s;
+  }
 
-.header-status {
-  margin-left: auto;
-  display: flex; align-items: center; gap: 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  color: var(--muted);
-}
+  .nav-links a:hover { color: var(--text-primary); }
 
-.status-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: blink 2s ease-in-out infinite;
-}
-@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  .nav-cta {
+    background: var(--accent);
+    color: #fff !important;
+    padding: 0.45rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background 0.2s, opacity 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--accent2) !important; opacity: 0.95; }
 
-.header-model {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--muted);
-  border: 1px solid var(--border2);
-  padding: 0.2em 0.6em;
-  border-radius: 2px;
-}
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    overflow: hidden;
+  }
 
-/* ── LAYOUT ─────────────────────────────────────────── */
-.layout {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  position: relative; z-index: 1;
-}
+  .hero-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(217,119,87,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
 
-/* ── САЙДБАР ────────────────────────────────────────── */
-.sidebar {
-  width: 240px;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  flex-shrink: 0;
-  overflow: hidden;
-}
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(217,119,87,0.25);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    animation: fadeUp 0.7s ease forwards;
+    opacity: 0;
+  }
 
-.sidebar-section {
-  padding: 0.75rem 1rem 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
-}
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
 
-.sidebar-btn {
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.65rem 1rem;
-  font-family: var(--body);
-  font-size: 0.82rem;
-  color: var(--muted);
-  cursor: pointer;
-  border: none; background: none;
-  width: 100%; text-align: left;
-  transition: background 0.15s, color 0.15s;
-  border-bottom: 1px solid transparent;
-}
-.sidebar-btn:hover { background: var(--bg3); color: var(--text); }
-.sidebar-btn.active {
-  background: var(--glow);
-  color: var(--accent2);
-  border-bottom-color: var(--border);
-}
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
 
-.sidebar-btn-icon { font-size: 0.9rem; }
+  .hero h1 {
+    font-family: 'Tiempos Headline', Georgia, serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    max-width: 820px;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.7s ease 0.1s forwards;
+    opacity: 0;
+  }
 
-.new-chat-btn {
-  margin: 1rem;
-  padding: 0.6rem 1rem;
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent2);
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
-}
-.new-chat-btn:hover {
-  background: var(--glow);
-  box-shadow: 0 0 12px rgba(200,87,42,0.2);
-}
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
 
-.sidebar-topics { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
+  .hero p {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+    animation: fadeUp 0.7s ease 0.2s forwards;
+    opacity: 0;
+  }
 
-.sidebar-topics::-webkit-scrollbar { width: 3px; }
-.sidebar-topics::-webkit-scrollbar-track { background: transparent; }
-.sidebar-topics::-webkit-scrollbar-thumb { background: var(--border2); }
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.7s ease 0.3s forwards;
+    opacity: 0;
+  }
 
-.topic-item {
-  padding: 0.5rem 1rem;
-  font-size: 0.78rem;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.15s, padding-left 0.15s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-left: 2px solid transparent;
-}
-.topic-item:hover { color: var(--text); padding-left: 1.2rem; border-left-color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.8rem 1.8rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(217,119,87,0.3);
+  }
 
-.sidebar-footer {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-  display: flex; flex-direction: column; gap: 0.3rem;
-}
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 0.8rem 1.8rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-secondary:hover {
+    background: var(--surface2);
+    border-color: #4a4844;
+    transform: translateY(-1px);
+  }
 
-/* ── ЧАТ ────────────────────────────────────────────── */
-.chat-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+  /* CHAT PREVIEW */
+  .chat-preview {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    margin: 4rem auto 0;
+    animation: fadeUp 0.8s ease 0.4s forwards;
+    opacity: 0;
+  }
 
-/* Приветственный экран */
-.welcome-screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  padding: 2rem;
-  text-align: center;
-}
+  .chat-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  }
 
-.welcome-hex {
-  width: 70px; height: 70px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.8rem;
-  animation: pulse-logo 3s ease-in-out infinite;
-}
+  .chat-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
 
-.welcome-title {
-  font-family: var(--title);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.welcome-title span { color: var(--accent); }
+  .chat-header-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.8;
+  }
 
-.welcome-sub {
-  font-size: 0.88rem;
-  color: var(--muted);
-  max-width: 420px;
-  line-height: 1.7;
-}
+  .chat-header span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
 
-.quick-prompts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  max-width: 560px;
-  width: 100%;
-}
+  .chat-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
 
-.quick-btn {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  padding: 0.9rem 1rem;
-  text-align: left;
-  cursor: pointer;
-  color: var(--text);
-  font-family: var(--body);
-  font-size: 0.8rem;
-  line-height: 1.5;
-  transition: border-color 0.2s, background 0.2s, transform 0.15s;
-}
-.quick-btn:hover {
-  border-color: var(--accent);
-  background: var(--glow);
-  transform: translateY(-2px);
-}
-.quick-btn strong {
-  display: block;
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--accent2);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 0.3rem;
-}
+  .msg {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+  }
 
-/* Сообщения */
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  display: none;
-}
+  .msg:nth-child(1) { animation-delay: 1.2s; }
+  .msg:nth-child(2) { animation-delay: 1.8s; }
+  .msg:nth-child(3) { animation-delay: 2.4s; }
 
-.messages::-webkit-scrollbar { width: 4px; }
-.messages::-webkit-scrollbar-track { background: transparent; }
-.messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
 
-.message {
-  display: flex;
-  gap: 1rem;
-  animation: msgIn 0.3s ease;
-}
-@keyframes msgIn {
-  from { opacity:0; transform: translateY(8px); }
-  to   { opacity:1; transform: none; }
-}
+  .msg-avatar.user {
+    background: linear-gradient(135deg, #4a6fa5, #6b8cc7);
+    color: #fff;
+  }
 
-.msg-avatar {
-  width: 32px; height: 32px;
-  flex-shrink: 0;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem;
-  font-family: var(--mono);
-  margin-top: 2px;
-}
+  .msg-avatar.claude {
+    background: linear-gradient(135deg, var(--accent), #e8906b);
+    color: #fff;
+  }
 
-.msg-avatar.ai   { background: var(--accent); color: #fff; }
-.msg-avatar.user { background: var(--bg3); border: 1px solid var(--border2); color: var(--muted); }
+  .msg-content {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 90%;
+  }
 
-.msg-body { flex: 1; min-width: 0; }
+  .msg.claude .msg-content {
+    background: var(--accent-soft);
+    border-color: rgba(217,119,87,0.2);
+    color: var(--text-primary);
+  }
 
-.msg-header {
-  display: flex; align-items: center; gap: 0.75rem;
-  margin-bottom: 0.4rem;
-}
+  .chat-input {
+    margin: 0 1.5rem 1.5rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.msg-name {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.msg-name.ai { color: var(--accent2); }
-.msg-name.user { color: var(--muted); }
+  .chat-input span {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
 
-.msg-time {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-}
+  .chat-input-btn {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
 
-.msg-text {
-  font-size: 0.88rem;
-  line-height: 1.7;
-  color: var(--text);
-}
+  /* FEATURES */
+  .section {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+  }
 
-.msg-text code {
-  font-family: var(--mono);
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  padding: 0.1em 0.4em;
-  font-size: 0.82em;
-  color: var(--accent2);
-}
+  .section-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
 
-.msg-text pre {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  padding: 1rem;
-  margin: 0.75rem 0;
-  overflow-x: auto;
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: #b8e4a8;
-}
+  .section-title {
+    font-family: 'Tiempos Headline', Georgia, serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    max-width: 540px;
+    margin-bottom: 3.5rem;
+    line-height: 1.2;
+  }
 
-/* Печатает... */
-.typing-indicator {
-  display: flex; gap: 4px; align-items: center;
-  padding: 0.5rem 0;
-}
-.typing-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: typingBounce 1.2s ease-in-out infinite;
-}
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes typingBounce {
-  0%,80%,100% { transform: translateY(0); opacity:0.4; }
-  40%          { transform: translateY(-6px); opacity:1; }
-}
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
 
-/* ── ПОЛЕ ВВОДА ─────────────────────────────────────── */
-.input-area {
-  padding: 1rem 1.5rem 1.2rem;
-  border-top: 1px solid var(--border);
-  background: var(--bg2);
-  flex-shrink: 0;
-}
+  .feature-card {
+    background: var(--surface);
+    padding: 2rem;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
 
-.input-wrapper {
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  padding: 0.6rem 0.6rem 0.6rem 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.input-wrapper:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(200,87,42,0.2);
-}
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, var(--accent-glow), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
 
-#chatInput {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--text);
-  font-family: var(--body);
-  font-size: 0.88rem;
-  line-height: 1.5;
-  resize: none;
-  max-height: 120px;
-  min-height: 22px;
-}
-#chatInput::placeholder { color: var(--muted); }
+  .feature-card:hover { background: var(--surface2); }
+  .feature-card:hover::before { opacity: 1; }
 
-.send-btn {
-  width: 36px; height: 36px;
-  background: var(--accent);
-  border: none;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-}
-.send-btn:hover { background: var(--accent2); transform: scale(1.05); }
-.send-btn:active { transform: scale(0.95); }
-.send-btn svg { width: 16px; height: 16px; fill: #fff; }
+  .feature-icon {
+    width: 40px; height: 40px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(217,119,87,0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+  }
 
-.input-hint {
-  display: flex; justify-content: space-between;
-  margin-top: 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-}
+  .feature-card h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
 
-/* ── КОНТЕКСТ СИСТЕМЫ ───────────────────────────────── */
-.system-bar {
-  padding: 0.4rem 1.5rem;
-  background: rgba(200,87,42,0.06);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 0.6rem;
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--accent);
-  flex-shrink: 0;
-}
+  .feature-card p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
 
-.system-bar-dot {
-  width: 5px; height: 5px;
-  background: var(--accent);
-  border-radius: 50%;
-}
+  /* STATS */
+  .stats {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
 
-/* ── СКРОЛЛБАР ──────────────────────────────────────── */
-* { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+  .stats-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Tiempos Headline', Georgia, serif;
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+  }
+
+  .stat-num span { color: var(--accent); }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  /* BOT SECTION */
+  .bot-section {
+    position: relative;
+    z-index: 1;
+    padding: 6rem 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .bot-section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .bot-wrapper {
+    margin-top: 3rem;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  }
+
+  /* CTA */
+  .cta-section {
+    text-align: center;
+    padding: 6rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(217,119,87,0.07), transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-section h2 {
+    font-family: 'Tiempos Headline', Georgia, serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    line-height: 1.15;
+  }
+
+  .cta-section p {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 420px;
+    margin: 0 auto 2.5rem;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .footer-links a {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text-secondary); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .stats-inner { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .hero h1 { font-size: 2.8rem; }
+  }
 </style>
 </head>
 <body>
 
-<!-- ШАПКА -->
-<header>
-  <div class="header-logo">
-    <div class="logo-icon">R</div>
-    <div class="logo-text"><span>RUST</span> AI</div>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="17" fill="rgba(217,119,87,0.15)" stroke="rgba(217,119,87,0.4)" stroke-width="1.5"/>
+      <path d="M12 22L14.5 15L18 22L21.5 15L24 22" stroke="#D97757" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="18" cy="11" r="2" fill="#D97757"/>
+    </svg>
+    <span>Claude</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Продукты</a></li>
+    <li><a href="#">API</a></li>
+    <li><a href="#">Исследования</a></li>
+    <li><a href="#bot-section">Rust Generator</a></li>
+    <li><a href="#" class="nav-cta">Попробовать</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">Claude 4 · Теперь доступен</div>
+  <h1>Думает <em>глубоко</em>,<br>помогает честно</h1>
+  <p>Умный ИИ-ассистент от Anthropic. Создан с фокусом на безопасность, точность и подлинную пользу для вас.</p>
+  <div class="hero-actions">
+    <button class="btn-primary">Начать бесплатно</button>
+    <button class="btn-secondary">Узнать больше</button>
   </div>
-  <div class="header-model">claude-sonnet-4</div>
-  <div class="header-status">
-    <div class="status-dot"></div>
-    ONLINE
+
+  <div class="chat-preview">
+    <div class="chat-window">
+      <div class="chat-header">
+        <div class="chat-header-dot"></div>
+        <span>Claude · Активен</span>
+      </div>
+      <div class="chat-body">
+        <div class="msg user">
+          <div class="msg-avatar user">ВЫ</div>
+          <div class="msg-content">Объясни квантовые вычисления простыми словами</div>
+        </div>
+        <div class="msg claude">
+          <div class="msg-avatar claude">C</div>
+          <div class="msg-content">Квантовые компьютеры — это как монета, которая одновременно орёл и решка, пока вы её не посмотрели. Обычные компьютеры работают с битами: 0 или 1. Квантовые — с кубитами, которые могут быть 0, 1 или обоими сразу. Это позволяет решать определённые задачи экспоненциально быстрее.</div>
+        </div>
+        <div class="msg user">
+          <div class="msg-avatar user">ВЫ</div>
+          <div class="msg-content">Дай пример реального применения</div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <span>Спросите что угодно...</span>
+        <div class="chat-input-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </div>
+      </div>
+    </div>
   </div>
-</header>
+</section>
 
-<!-- LAYOUT -->
-<div class="layout">
-
-  <!-- САЙДБАР -->
-  <aside class="sidebar">
-    <div class="sidebar-section">Режим</div>
-    <button class="sidebar-btn active" onclick="setMode(this, 'plugin')">
-      <span class="sidebar-btn-icon">🔧</span> Плагины Oxide
-    </button>
-    <button class="sidebar-btn" onclick="setMode(this, 'game')">
-      <span class="sidebar-btn-icon">🎮</span> Вопросы по Rust
-    </button>
-    <button class="sidebar-btn" onclick="setMode(this, 'server')">
-      <span class="sidebar-btn-icon">⚙️</span> Настройка сервера
-    </button>
-    <button class="sidebar-btn" onclick="setMode(this, 'code')">
-      <span class="sidebar-btn-icon">💻</span> C# / Код
-    </button>
-
-    <button class="new-chat-btn" onclick="newChat()">+ Новый чат</button>
-
-    <div class="sidebar-section" style="margin-top:0">История</div>
-    <div class="sidebar-topics" id="history">
-      <div class="topic-item">WipeBlock UI таймер</div>
-      <div class="topic-item">Как заблокировать rifle.ak</div>
-      <div class="topic-item">Полоса прогресса CUI</div>
-      <div class="topic-item">Команда /wb setwipe</div>
-      <div class="topic-item">Сайт на GitHub Pages</div>
+<!-- STATS -->
+<div class="stats">
+  <div class="stats-inner">
+    <div>
+      <div class="stat-num">200<span>K</span></div>
+      <div class="stat-label">токенов контекстного окна</div>
     </div>
-
-    <div class="sidebar-footer">
-      <span>RUST AI v1.0</span>
-      <span style="color:var(--accent)">Oxide / uMod</span>
+    <div>
+      <div class="stat-num">100<span>+</span></div>
+      <div class="stat-label">языков понимает Claude</div>
     </div>
-  </aside>
-
-  <!-- ЧАТ -->
-  <div class="chat-area">
-
-    <div class="system-bar">
-      <div class="system-bar-dot"></div>
-      <span id="systemLabel">Режим: Разработка плагинов Oxide/uMod для Rust</span>
+    <div>
+      <div class="stat-num">99<span>%</span></div>
+      <div class="stat-label">uptime по всему миру</div>
     </div>
-
-    <!-- Приветствие -->
-    <div class="welcome-screen" id="welcomeScreen">
-      <div class="welcome-hex">⚡</div>
-      <div>
-        <div class="welcome-title">RUST <span>AI</span></div>
-        <div class="welcome-sub">Ассистент по разработке плагинов Oxide, настройке серверов и всему что связано с Rust.</div>
-      </div>
-      <div class="quick-prompts">
-        <button class="quick-btn" onclick="quickPrompt(this)">
-          <strong>🔧 Плагин</strong>
-          Создай шаблон плагина WipeBlock с UI
-        </button>
-        <button class="quick-btn" onclick="quickPrompt(this)">
-          <strong>🛡️ Блокировка</strong>
-          Как заблокировать предмет по shortname?
-        </button>
-        <button class="quick-btn" onclick="quickPrompt(this)">
-          <strong>🎨 CUI</strong>
-          Как сделать красивый интерфейс в Rust?
-        </button>
-        <button class="quick-btn" onclick="quickPrompt(this)">
-          <strong>⚙️ Сервер</strong>
-          Как настроить oxide.permissions?
-        </button>
-      </div>
-    </div>
-
-    <!-- Сообщения -->
-    <div class="messages" id="messages"></div>
-
-    <!-- Поле ввода -->
-    <div class="input-area">
-      <div class="input-wrapper">
-        <textarea id="chatInput" rows="1" placeholder="Спроси что-нибудь про Rust плагины..."></textarea>
-        <button class="send-btn" onclick="sendMessage()" id="sendBtn">
-          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-        </button>
-      </div>
-      <div class="input-hint">
-        <span>Enter — отправить &nbsp;·&nbsp; Shift+Enter — новая строка</span>
-        <span id="charCount">0 / 2000</span>
-      </div>
-    </div>
-
   </div>
 </div>
 
-<script>
-// ── Состояние ──────────────────────────────────────────
-let currentMode = 'plugin';
-let chatHistory = [];
-let isLoading   = false;
+<!-- FEATURES -->
+<div class="section">
+  <div class="section-label">Возможности</div>
+  <h2 class="section-title">Всё, что нужно для работы с AI</h2>
 
-const SYSTEM_PROMPTS = {
-  plugin: `Ты — эксперт по разработке плагинов Oxide/uMod для игры Rust. 
-Отвечай на русском языке. Пиши чистый, рабочий C# код для Rust плагинов. 
-Объясняй как хуки Oxide, CUI интерфейс, конфигурация, разрешения. 
-Форматируй код в блоки. Будь конкретным и практичным.`,
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Глубокий анализ</h3>
+      <p>Разбирает сложные документы, код и данные. Находит паттерны там, где другие видят шум.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✍️</div>
+      <h3>Умное письмо</h3>
+      <p>От технических отчётов до творческой прозы — адаптируется под ваш стиль и задачи.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💻</div>
+      <h3>Разработка кода</h3>
+      <p>Пишет, отлаживает и объясняет код на десятках языков программирования.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <h3>Длинный контекст</h3>
+      <p>Удерживает 200K токенов. Анализирует целые книги и кодовые базы за один раз.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>Безопасность</h3>
+      <p>Конституциональный AI — ответы не только умные, но и этически выверенные.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>API доступ</h3>
+      <p>Интеграция в любое приложение. Гибкие планы для стартапов и enterprise.</p>
+    </div>
+  </div>
+</div>
 
-  game: `Ты — эксперт по игре Rust. Отвечай на русском языке. 
-Помогай с игровыми механиками, крафтом, стратегиями, базостроением. 
-Давай конкретные практические советы.`,
+<!-- BOT SECTION -->
+<div class="bot-section" id="bot-section">
+  <div class="bot-section-inner">
+    <div class="section-label">Инструменты · Rust</div>
+    <h2 class="section-title">Rust Plugin Generator</h2>
+    <p style="color:var(--text-secondary);font-size:1rem;margin-top:-2rem;margin-bottom:0;max-width:560px;line-height:1.7;">
+      Загрузи скриншот плагина или UI из Rust — и Claude напишет полный рабочий C# плагин для Oxide/uMod за секунды.
+    </p>
+    <div class="bot-wrapper">
+      <div id="rust-bot-root"></div>
+    </div>
+  </div>
+</div>
 
-  server: `Ты — эксперт по администрированию серверов Rust. Отвечай на русском языке.
-Помогай с настройкой server.cfg, oxide, плагинами, правами доступа, оптимизацией.`,
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Готовы начать<br>думать иначе?</h2>
+  <p>Присоединяйтесь к миллионам людей, которые уже работают с Claude.</p>
+  <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+    <button class="btn-primary">Создать аккаунт бесплатно</button>
+    <button class="btn-secondary">Документация API →</button>
+  </div>
+</div>
 
-  code: `Ты — эксперт по C# программированию, особенно в контексте Rust/Oxide. 
-Отвечай на русском языке. Пиши чистый код, объясняй паттерны и практики разработки плагинов.`
-};
+<!-- FOOTER -->
+<footer>
+  <p>© 2024 Anthropic PBC · Сан-Франциско, CA</p>
+  <div class="footer-links">
+    <a href="#">Конфиденциальность</a>
+    <a href="#">Условия</a>
+    <a href="#">Безопасность</a>
+    <a href="#">Карьера</a>
+  </div>
+</footer>
 
-const SYSTEM_LABELS = {
-  plugin: 'Режим: Разработка плагинов Oxide/uMod для Rust',
-  game:   'Режим: Вопросы по игре Rust',
-  server: 'Режим: Администрирование и настройка сервера',
-  code:   'Режим: C# программирование'
-};
+<!-- RUST BOT REACT COMPONENT -->
+<script type="text/babel">
+const { useState, useRef, useCallback } = React;
 
-// ── Режимы ──────────────────────────────────────────────
-function setMode(btn, mode) {
-  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentMode = mode;
-  document.getElementById('systemLabel').textContent = SYSTEM_LABELS[mode];
-}
+const SYSTEM_PROMPT = `You are an expert Rust game (sandbox survival game) plugin developer. 
+You analyze screenshots or images of Rust plugins, UI elements, game mechanics, or plugin configurations and write COMPLETE, WORKING C# plugin code for the Oxide/uMod framework.
 
-// ── Быстрые промпты ─────────────────────────────────────
-function quickPrompt(btn) {
-  const text = btn.querySelector('strong').nextSibling.textContent.trim();
-  document.getElementById('chatInput').value = text;
-  sendMessage();
-}
+When given an image:
+1. Carefully analyze what plugin or feature is shown
+2. Write a complete, functional C# plugin for Oxide/uMod
+3. Include all necessary hooks, permissions, commands
+4. Add proper comments and documentation
+5. Make the plugin match EXACTLY what is shown in the image
 
-// ── Новый чат ───────────────────────────────────────────
-function newChat() {
-  chatHistory = [];
-  document.getElementById('messages').innerHTML = '';
-  document.getElementById('messages').style.display = 'none';
-  document.getElementById('welcomeScreen').style.display = 'flex';
-}
+Always output ONLY the complete plugin code, starting with using statements.
+The code must be production-ready and work on a Rust server with Oxide/uMod installed.`;
 
-// ── Авто-высота textarea ────────────────────────────────
-const input = document.getElementById('chatInput');
-input.addEventListener('input', function() {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-  document.getElementById('charCount').textContent = this.value.length + ' / 2000';
-});
+function RustPluginGenerator() {
+  const [image, setImage] = useState(null);
+  const [imageBase64, setImageBase64] = useState(null);
+  const [imageType, setImageType] = useState(null);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef(null);
 
-input.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
+  const processFile = useCallback((file) => {
+    if (!file || !file.type.startsWith("image/")) {
+      setError("Загрузите изображение (PNG, JPG, WebP)");
+      return;
+    }
+    setError("");
+    setCode("");
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const base64 = dataUrl.split(",")[1];
+      setImage(dataUrl);
+      setImageBase64(base64);
+      setImageType(file.type);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
     e.preventDefault();
-    sendMessage();
-  }
-});
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    processFile(file);
+  }, [processFile]);
 
-// ── Отправка сообщения ──────────────────────────────────
-async function sendMessage() {
-  const text = input.value.trim();
-  if (!text || isLoading) return;
+  const handleFileChange = (e) => processFile(e.target.files[0]);
 
-  // Скрываем приветствие
-  document.getElementById('welcomeScreen').style.display = 'none';
-  const messages = document.getElementById('messages');
-  messages.style.display = 'flex';
+  const generate = async () => {
+    if (!imageBase64) return;
+    setLoading(true);
+    setError("");
+    setCode("");
 
-  // Добавляем в историю
-  chatHistory.push({ role: 'user', content: text });
-  input.value = '';
-  input.style.height = 'auto';
-  document.getElementById('charCount').textContent = '0 / 2000';
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 4096,
+          system: SYSTEM_PROMPT,
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: imageType,
+                    data: imageBase64,
+                  },
+                },
+                {
+                  type: "text",
+                  text: "Проанализируй это изображение и напиши полный рабочий плагин для Rust (Oxide/uMod) на C#, который точно воспроизводит то, что показано на скриншоте. Пиши только код плагина без объяснений.",
+                },
+              ],
+            },
+          ],
+        }),
+      });
 
-  // Рендерим сообщение пользователя
-  appendMessage('user', text);
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      const text = data.content?.find((b) => b.type === "text")?.text || "";
+      setCode(text.replace(/^```(?:csharp|cs)?\n?/, "").replace(/\n?```$/, ""));
+    } catch (err) {
+      setError("Ошибка генерации: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Индикатор загрузки
-  const typingEl = appendTyping();
-  isLoading = true;
-  document.getElementById('sendBtn').style.opacity = '0.5';
+  const copyCode = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPTS[currentMode],
-        messages: chatHistory
-      })
-    });
+  const downloadCode = () => {
+    const pluginName = code.match(/class\s+(\w+)\s*:/)?.[1] || "RustPlugin";
+    const blob = new Blob([code], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${pluginName}.cs`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-    const data = await response.json();
-    const reply = data.content?.[0]?.text || 'Ошибка получения ответа.';
+  return (
+    <div style={{
+      background: "#0a0c0f",
+      fontFamily: "'Courier New', monospace",
+      color: "#e8e0d0",
+      padding: "32px 24px",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      {/* Animated background grid */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        backgroundImage: `
+          linear-gradient(rgba(205, 127, 50, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(205, 127, 50, 0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: "40px 40px",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
 
-    // Добавляем ответ в историю
-    chatHistory.push({ role: 'assistant', content: reply });
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        background: "radial-gradient(ellipse at 20% 80%, rgba(139, 69, 19, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(205, 127, 50, 0.05) 0%, transparent 50%)",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
 
-    typingEl.remove();
-    appendMessage('ai', reply);
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {/* Header */}
+        <div style={{ marginBottom: "32px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "8px" }}>
+            <div style={{
+              width: "48px", height: "48px",
+              background: "linear-gradient(135deg, #cd7f32, #8b4513)",
+              clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "20px",
+            }}>⚙</div>
+            <div>
+              <h2 style={{
+                fontSize: "22px",
+                fontWeight: "700",
+                letterSpacing: "4px",
+                textTransform: "uppercase",
+                margin: 0,
+                background: "linear-gradient(90deg, #cd7f32, #e8a050, #cd7f32)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundSize: "200% 100%",
+                animation: "shimmer 3s infinite linear",
+              }}>
+                RUST PLUGIN.GEN
+              </h2>
+              <p style={{ margin: 0, fontSize: "11px", letterSpacing: "3px", color: "#6b5a3e", textTransform: "uppercase" }}>
+                AI-powered // Oxide/uMod // C# Code Generator
+              </p>
+            </div>
+          </div>
+          <div style={{ height: "1px", background: "linear-gradient(90deg, #cd7f32, transparent)", marginTop: "16px" }} />
+        </div>
 
-    // Сохраняем в историю сайдбара
-    addToHistory(text);
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", minHeight: "60vh" }}>
+          {/* Left Panel */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{
+              fontSize: "10px", letterSpacing: "4px", textTransform: "uppercase",
+              color: "#6b5a3e", borderLeft: "2px solid #cd7f32", paddingLeft: "12px",
+            }}>
+              // INPUT — SCREENSHOT
+            </div>
 
-  } catch (err) {
-    typingEl.remove();
-    appendMessage('ai', '⚠️ Ошибка подключения к API. Проверь соединение.');
-  }
+            <div
+              onClick={() => fileRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              style={{
+                border: `2px dashed ${dragOver ? "#cd7f32" : image ? "#5a3e1e" : "#2a2218"}`,
+                borderRadius: "4px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                background: dragOver ? "rgba(205, 127, 50, 0.05)" : "rgba(10, 12, 15, 0.8)",
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "300px",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              {image ? (
+                <>
+                  <img src={image} alt="uploaded" style={{
+                    width: "100%", height: "100%", objectFit: "contain",
+                    maxHeight: "400px",
+                  }} />
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    background: "linear-gradient(transparent, rgba(10,12,15,0.9))",
+                    padding: "16px 12px 12px",
+                    fontSize: "10px", letterSpacing: "2px", color: "#6b5a3e",
+                    textAlign: "center",
+                  }}>
+                    НАЖМИ ДЛЯ ЗАМЕНЫ
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                  <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.3 }}>📸</div>
+                  <div style={{ fontSize: "13px", letterSpacing: "2px", color: "#4a3a28", textTransform: "uppercase" }}>
+                    Перетащи скриншот плагина
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#2a2218", marginTop: "8px", letterSpacing: "1px" }}>
+                    или нажми для выбора файла
+                  </div>
+                  <div style={{ marginTop: "24px", display: "flex", gap: "8px", justifyContent: "center" }}>
+                    {["PNG", "JPG", "WEBP"].map(f => (
+                      <span key={f} style={{
+                        fontSize: "9px", letterSpacing: "2px", padding: "3px 8px",
+                        border: "1px solid #2a2218", color: "#4a3a28",
+                      }}>{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
-  isLoading = false;
-  document.getElementById('sendBtn').style.opacity = '1';
-}
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
 
-// ── Рендер сообщения ────────────────────────────────────
-function appendMessage(role, text) {
-  const messages = document.getElementById('messages');
-  const now = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+            <button
+              onClick={generate}
+              disabled={!image || loading}
+              style={{
+                width: "100%",
+                padding: "14px",
+                background: image && !loading
+                  ? "linear-gradient(135deg, #8b4513, #cd7f32)"
+                  : "#1a1410",
+                border: "none",
+                color: image && !loading ? "#fff" : "#3a2a1a",
+                fontSize: "12px",
+                letterSpacing: "4px",
+                textTransform: "uppercase",
+                cursor: image && !loading ? "pointer" : "not-allowed",
+                transition: "all 0.2s",
+                fontFamily: "inherit",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {loading ? (
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                  <span style={{
+                    width: "12px", height: "12px",
+                    border: "2px solid #cd7f32",
+                    borderTopColor: "transparent",
+                    borderRadius: "50%",
+                    animation: "spin 0.8s linear infinite",
+                    display: "inline-block",
+                  }} />
+                  ГЕНЕРАЦИЯ ПЛАГИНА...
+                </span>
+              ) : "⚙ СГЕНЕРИРОВАТЬ ПЛАГИН"}
+            </button>
 
-  const isAI = role === 'ai';
-  const div = document.createElement('div');
-  div.className = 'message';
-  div.innerHTML = `
-    <div class="msg-avatar ${role}">${isAI ? 'AI' : 'ME'}</div>
-    <div class="msg-body">
-      <div class="msg-header">
-        <span class="msg-name ${role}">${isAI ? 'RUST AI' : 'ВЫ'}</span>
-        <span class="msg-time">${now}</span>
+            {error && (
+              <div style={{
+                padding: "12px", background: "rgba(139, 0, 0, 0.1)",
+                border: "1px solid #8b0000", fontSize: "11px", color: "#ff4444",
+                letterSpacing: "1px",
+              }}>
+                ⚠ {error}
+              </div>
+            )}
+          </div>
+
+          {/* Right Panel */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{
+                fontSize: "10px", letterSpacing: "4px", textTransform: "uppercase",
+                color: "#6b5a3e", borderLeft: "2px solid #cd7f32", paddingLeft: "12px",
+              }}>
+                // OUTPUT — C# PLUGIN
+              </div>
+              {code && (
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={copyCode} style={{
+                    background: "none", border: "1px solid #2a2218", color: copied ? "#cd7f32" : "#6b5a3e",
+                    padding: "4px 12px", fontSize: "9px", letterSpacing: "2px",
+                    cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase",
+                    transition: "all 0.2s",
+                  }}>
+                    {copied ? "✓ СКОПИРОВАНО" : "КОПИРОВАТЬ"}
+                  </button>
+                  <button onClick={downloadCode} style={{
+                    background: "linear-gradient(135deg, #8b4513, #cd7f32)",
+                    border: "none", color: "#fff",
+                    padding: "4px 12px", fontSize: "9px", letterSpacing: "2px",
+                    cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase",
+                  }}>
+                    ↓ .CS ФАЙЛ
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div style={{
+              flex: 1,
+              background: "#050708",
+              border: "1px solid #1a1410",
+              borderRadius: "4px",
+              overflow: "auto",
+              minHeight: "400px",
+              position: "relative",
+            }}>
+              {!code && !loading && (
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center",
+                  color: "#2a2218",
+                }}>
+                  <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>{ }</div>
+                  <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase" }}>
+                    КОД ПОЯВИТСЯ ЗДЕСЬ
+                  </div>
+                  <div style={{ marginTop: "8px", fontSize: "10px", opacity: 0.5 }}>
+                    Загрузи скриншот → нажми генерацию
+                  </div>
+                </div>
+              )}
+
+              {loading && (
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center",
+                  gap: "16px",
+                }}>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {[0, 1, 2, 3, 4].map(i => (
+                      <div key={i} style={{
+                        width: "4px", height: "24px",
+                        background: "#cd7f32",
+                        borderRadius: "2px",
+                        animation: `wave 1s ease-in-out infinite`,
+                        animationDelay: `${i * 0.1}s`,
+                        opacity: 0.7,
+                      }} />
+                    ))}
+                  </div>
+                  <div style={{ fontSize: "10px", letterSpacing: "3px", color: "#6b5a3e", textTransform: "uppercase" }}>
+                    Анализ изображения...
+                  </div>
+                </div>
+              )}
+
+              {code && (
+                <pre style={{
+                  margin: 0,
+                  padding: "20px",
+                  fontSize: "12px",
+                  lineHeight: "1.7",
+                  color: "#c8b89a",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  fontFamily: "'Courier New', monospace",
+                }}>
+                  {code.split("\n").map((line, i) => {
+                    let color = "#c8b89a";
+                    if (line.trim().startsWith("//")) color = "#5a6e4a";
+                    else if (/^\s*(using|namespace|class|public|private|protected|static|void|override|new|return|if|else|for|foreach|var|string|int|bool|float|List|Dictionary)\b/.test(line)) color = "#cd7f32";
+                    else if (/^\s*\[/.test(line)) color = "#7a9a6a";
+                    else if (line.includes('"')) color = "#8a9a6a";
+                    return (
+                      <span key={i} style={{ display: "block", color }}>
+                        <span style={{ color: "#2a2218", userSelect: "none", marginRight: "16px", fontSize: "10px" }}>
+                          {String(i + 1).padStart(3, " ")}
+                        </span>
+                        {line}
+                      </span>
+                    );
+                  })}
+                </pre>
+              )}
+            </div>
+
+            {code && (
+              <div style={{
+                padding: "10px 14px",
+                background: "rgba(205, 127, 50, 0.05)",
+                border: "1px solid #2a1e10",
+                fontSize: "10px", color: "#5a4a2e", letterSpacing: "1px",
+                display: "flex", gap: "20px",
+              }}>
+                <span>📄 {code.split("\n").length} строк</span>
+                <span>🔤 {code.length} символов</span>
+                <span style={{ marginLeft: "auto", color: "#4a7a3a" }}>✓ OXIDE/UMOD СОВМЕСТИМ</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{
+          marginTop: "24px", paddingTop: "16px",
+          borderTop: "1px solid #1a1410",
+          fontSize: "9px", letterSpacing: "3px", color: "#2a2218",
+          textTransform: "uppercase", textAlign: "center",
+        }}>
+          Powered by Claude Vision AI // Rust Plugin Generator v1.0 // Oxide · uMod · C#
+        </div>
       </div>
-      <div class="msg-text">${formatText(text)}</div>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes wave {
+          0%, 100% { transform: scaleY(0.4); }
+          50% { transform: scaleY(1.2); }
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0c0f; }
+        ::-webkit-scrollbar-thumb { background: #2a2218; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cd7f32; }
+      `}</style>
     </div>
-  `;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-  return div;
-}
-
-// ── Индикатор печати ────────────────────────────────────
-function appendTyping() {
-  const messages = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = 'message';
-  div.innerHTML = `
-    <div class="msg-avatar ai">AI</div>
-    <div class="msg-body">
-      <div class="msg-header">
-        <span class="msg-name ai">RUST AI</span>
-      </div>
-      <div class="typing-indicator">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-      </div>
-    </div>
-  `;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-  return div;
-}
-
-// ── Форматирование текста ───────────────────────────────
-function formatText(text) {
-  // Код блоки ```
-  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
-    `<pre>${escHtml(code.trim())}</pre>`
   );
-  // Инлайн код
-  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // Жирный
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Переносы строк
-  text = text.replace(/\n/g, '<br>');
-  return text;
 }
 
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ── История в сайдбаре ───────────────────────────────────
-function addToHistory(text) {
-  const historyEl = document.getElementById('history');
-  const item = document.createElement('div');
-  item.className = 'topic-item';
-  item.textContent = text.length > 35 ? text.substring(0, 34) + '…' : text;
-  historyEl.insertBefore(item, historyEl.firstChild);
-}
+const root = ReactDOM.createRoot(document.getElementById("rust-bot-root"));
+root.render(<RustPluginGenerator />);
 </script>
+
 </body>
 </html>
