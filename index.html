@@ -7,244 +7,296 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{
-  font-family:'Inter',sans-serif;
-  background:#050508;
-  color:#fff;
-  overflow-x:hidden;
-  min-height:100vh;
-}
+body{font-family:'Inter',sans-serif;background:#00000f;color:#fff;overflow-x:hidden;min-height:100vh}
 
-/* BG */
-.bg-gradient{
-  position:fixed;inset:0;z-index:0;
+/* STARS CANVAS */
+#stars-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* NEBULA BG */
+.nebula{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(120,80,255,0.25),transparent),
-    radial-gradient(ellipse 60% 40% at 80% 60%,rgba(205,127,50,0.1),transparent),
-    radial-gradient(ellipse 40% 30% at 10% 80%,rgba(80,120,255,0.08),transparent);
-}
-.bg-grid{
-  position:fixed;inset:0;z-index:0;
-  background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
-  background-size:60px 60px;
-  mask-image:radial-gradient(ellipse 100% 100% at 50% 0%,black 40%,transparent 100%);
+    radial-gradient(ellipse 70% 50% at 20% 30%,rgba(88,28,220,0.18),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 70%,rgba(205,127,50,0.1),transparent),
+    radial-gradient(ellipse 80% 60% at 50% 100%,rgba(20,10,60,0.8),transparent),
+    radial-gradient(ellipse 100% 50% at 50% 0%,rgba(15,5,50,0.9),transparent);
 }
 
 /* NAV */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:0 2rem;height:64px;
+  padding:0 2.5rem;height:66px;
   display:flex;align-items:center;justify-content:space-between;
-  background:rgba(5,5,8,0.7);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(0,0,15,0.6);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(140,100,255,0.15);
 }
-.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
 .nav-logo-icon{
-  width:34px;height:34px;border-radius:10px;
-  background:linear-gradient(135deg,#7c3aed,#cd7f32);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#5b1de8,#cd7f32);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 0 20px rgba(91,29,232,0.5);
 }
-.nav-logo span{font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:-0.02em}
+.nav-logo span{font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:.05em}
 .nav-logo span b{color:#a78bfa}
 .nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
-.nav-links a{text-decoration:none;color:rgba(255,255,255,0.5);font-size:0.875rem;font-weight:500;transition:color .2s}
-.nav-links a:hover{color:#fff}
+.nav-links a{text-decoration:none;color:rgba(255,255,255,0.45);font-size:.875rem;font-weight:500;transition:color .2s;letter-spacing:.02em}
+.nav-links a:hover{color:#a78bfa}
 .nav-btn{
-  background:linear-gradient(135deg,#7c3aed,#5b21b6);
-  color:#fff;border:none;padding:.5rem 1.2rem;border-radius:8px;
-  font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;
-  transition:opacity .2s,transform .2s;
+  background:linear-gradient(135deg,#5b1de8,#7c3aed);
+  color:#fff;border:none;padding:.5rem 1.4rem;border-radius:8px;
+  font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.05em;
+  box-shadow:0 0 20px rgba(91,29,232,0.4);
+  transition:all .2s;
 }
-.nav-btn:hover{opacity:.85;transform:translateY(-1px)}
+.nav-btn:hover{box-shadow:0 0 35px rgba(91,29,232,0.7);transform:translateY(-1px)}
 
 /* HERO */
 .hero{
   position:relative;z-index:1;
   min-height:100vh;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:6rem 2rem 4rem;
+  text-align:center;padding:7rem 2rem 5rem;
 }
 .hero-badge{
   display:inline-flex;align-items:center;gap:8px;
-  background:rgba(124,58,237,0.15);
-  border:1px solid rgba(124,58,237,0.4);
-  border-radius:100px;padding:6px 16px;
-  font-size:.78rem;font-weight:600;color:#a78bfa;
-  margin-bottom:2rem;letter-spacing:.05em;text-transform:uppercase;
-  animation:fadeUp .6s ease forwards;opacity:0;
+  background:rgba(91,29,232,0.15);
+  border:1px solid rgba(167,139,250,0.3);
+  border-radius:100px;padding:6px 18px;
+  font-size:.72rem;font-weight:700;color:#c4b5fd;
+  margin-bottom:2rem;letter-spacing:.12em;text-transform:uppercase;
+  animation:fadeUp .7s ease forwards;opacity:0;
+  box-shadow:0 0 30px rgba(91,29,232,0.2);
 }
-.badge-dot{width:6px;height:6px;background:#a78bfa;border-radius:50%;animation:pulse 2s infinite}
+.badge-dot{width:7px;height:7px;background:#a78bfa;border-radius:50%;animation:pulse 2s infinite;box-shadow:0 0 8px #a78bfa}
 .hero h1{
-  font-size:clamp(2.8rem,7vw,5.5rem);font-weight:900;
-  line-height:1.05;letter-spacing:-.04em;
+  font-family:'Orbitron',monospace;
+  font-size:clamp(2.2rem,6vw,5rem);font-weight:900;
+  line-height:1.1;letter-spacing:-.01em;
   margin-bottom:1.5rem;
-  animation:fadeUp .6s ease .1s forwards;opacity:0;
+  animation:fadeUp .7s ease .1s forwards;opacity:0;
 }
 .hero h1 .grad{
-  background:linear-gradient(135deg,#a78bfa 0%,#cd7f32 50%,#f59e0b 100%);
+  background:linear-gradient(135deg,#c4b5fd 0%,#a78bfa 30%,#cd7f32 70%,#f59e0b 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 30px rgba(167,139,250,0.4));
 }
 .hero p{
-  font-size:1.125rem;color:rgba(255,255,255,0.55);max-width:520px;
-  margin-bottom:2.5rem;line-height:1.75;
-  animation:fadeUp .6s ease .2s forwards;opacity:0;
+  font-size:1.1rem;color:rgba(255,255,255,0.5);max-width:540px;
+  margin-bottom:2.5rem;line-height:1.8;
+  animation:fadeUp .7s ease .2s forwards;opacity:0;
 }
 .hero-actions{
   display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;
-  animation:fadeUp .6s ease .3s forwards;opacity:0;
-  margin-bottom:4rem;
+  animation:fadeUp .7s ease .3s forwards;opacity:0;
+  margin-bottom:5rem;
 }
 .btn-main{
-  background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;
-  padding:.85rem 2rem;border-radius:12px;font-size:1rem;font-weight:700;
-  cursor:pointer;font-family:inherit;transition:all .2s;
-  box-shadow:0 0 40px rgba(124,58,237,0.35);
+  background:linear-gradient(135deg,#5b1de8,#7c3aed);color:#fff;border:none;
+  padding:.9rem 2.2rem;border-radius:12px;font-size:1rem;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .25s;letter-spacing:.03em;
+  box-shadow:0 0 40px rgba(91,29,232,0.4),0 4px 20px rgba(0,0,0,0.4);
 }
-.btn-main:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(124,58,237,0.5)}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 0 60px rgba(91,29,232,0.7),0 8px 30px rgba(0,0,0,0.5)}
 .btn-ghost{
-  background:rgba(255,255,255,0.06);color:#fff;
-  border:1px solid rgba(255,255,255,0.12);
-  padding:.85rem 2rem;border-radius:12px;font-size:1rem;font-weight:600;
-  cursor:pointer;font-family:inherit;transition:all .2s;
+  background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);
+  border:1px solid rgba(167,139,250,0.25);
+  padding:.9rem 2.2rem;border-radius:12px;font-size:1rem;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:all .25s;
 }
-.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
+.btn-ghost:hover{background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.5)}
 
 /* STATS */
 .stats-row{
   position:relative;z-index:1;
-  display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;
-  padding:3rem 2rem;
-  border-top:1px solid rgba(255,255,255,0.06);
-  border-bottom:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.02);
+  display:flex;justify-content:center;gap:0;flex-wrap:wrap;
+  border-top:1px solid rgba(140,100,255,0.1);
+  border-bottom:1px solid rgba(140,100,255,0.1);
 }
-.stat{text-align:center}
-.stat-n{font-size:2.2rem;font-weight:900;letter-spacing:-.03em;
+.stat{
+  text-align:center;padding:2.5rem 3.5rem;
+  border-right:1px solid rgba(140,100,255,0.1);
+  background:rgba(255,255,255,0.01);
+}
+.stat:last-child{border-right:none}
+.stat-n{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:900;
   background:linear-gradient(135deg,#a78bfa,#cd7f32);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-l{font-size:.8rem;color:rgba(255,255,255,0.4);margin-top:.25rem;font-weight:500}
-
-/* HOW IT WORKS */
-.section{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:6rem 2rem}
-.section-tag{
-  display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.15em;
-  text-transform:uppercase;color:#a78bfa;margin-bottom:.75rem;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none;filter:drop-shadow(0 0 15px rgba(167,139,250,0.3));
 }
-.section-title{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin-bottom:1rem;line-height:1.15}
-.section-sub{font-size:1rem;color:rgba(255,255,255,0.45);max-width:480px;line-height:1.7;margin-bottom:3.5rem}
+.stat-l{font-size:.78rem;color:rgba(255,255,255,0.35);margin-top:.3rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+
+/* HOW */
+.section{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:7rem 2rem}
+.section-tag{
+  display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:#a78bfa;margin-bottom:.75rem;
+  text-shadow:0 0 20px rgba(167,139,250,0.5);
+}
+.section-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.01em;margin-bottom:1rem;line-height:1.2
+}
+.section-sub{font-size:1rem;color:rgba(255,255,255,0.4);max-width:480px;line-height:1.8;margin-bottom:3.5rem}
 
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
 .step{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(140,100,255,0.12);
   border-radius:20px;padding:2rem;
   transition:all .3s;position:relative;overflow:hidden;
+  backdrop-filter:blur(10px);
 }
 .step::before{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at top left,rgba(124,58,237,0.08),transparent 60%);
+  background:radial-gradient(circle at top left,rgba(91,29,232,0.1),transparent 60%);
   opacity:0;transition:opacity .3s;
 }
-.step:hover{border-color:rgba(124,58,237,0.3);transform:translateY(-4px)}
+.step:hover{border-color:rgba(167,139,250,0.35);transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,0.4),0 0 30px rgba(91,29,232,0.1)}
 .step:hover::before{opacity:1}
 .step-num{
-  width:44px;height:44px;border-radius:12px;
-  background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(205,127,50,0.3));
-  border:1px solid rgba(124,58,237,0.3);
+  width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(91,29,232,0.4),rgba(205,127,50,0.3));
+  border:1px solid rgba(167,139,250,0.2);
   display:flex;align-items:center;justify-content:center;
-  font-size:1.2rem;margin-bottom:1.25rem;
+  font-size:1.3rem;margin-bottom:1.25rem;
+  box-shadow:0 0 20px rgba(91,29,232,0.2);
 }
-.step h3{font-size:1rem;font-weight:700;margin-bottom:.5rem;color:#fff}
-.step p{font-size:.875rem;color:rgba(255,255,255,0.45);line-height:1.65}
+.step h3{font-size:.95rem;font-weight:700;margin-bottom:.5rem;color:#e2d9ff;letter-spacing:.02em}
+.step p{font-size:.85rem;color:rgba(255,255,255,0.4);line-height:1.7}
 
-/* GENERATOR */
-.gen-section{
-  position:relative;z-index:1;
-  padding:4rem 2rem 6rem;
-  max-width:1300px;margin:0 auto;
-}
+/* GENERATOR SECTION */
+.gen-section{position:relative;z-index:1;padding:4rem 2rem 7rem;max-width:1350px;margin:0 auto}
 .gen-header{text-align:center;margin-bottom:3rem}
 .gen-card{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:24px;
-  overflow:hidden;
-  box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.02);
+  background:rgba(5,3,20,0.8);
+  border:1px solid rgba(140,100,255,0.15);
+  border-radius:24px;overflow:hidden;
+  box-shadow:0 0 80px rgba(91,29,232,0.1),0 40px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.04);
+  backdrop-filter:blur(20px);
 }
 .gen-topbar{
   padding:1rem 1.5rem;
-  background:rgba(255,255,255,0.03);
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid rgba(140,100,255,0.1);
   display:flex;align-items:center;gap:8px;
 }
 .gen-dot{width:12px;height:12px;border-radius:50%}
 
 /* CTA */
 .cta{
-  position:relative;z-index:1;
-  text-align:center;padding:6rem 2rem;
-  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(124,58,237,0.12),transparent);
-  border-top:1px solid rgba(255,255,255,0.05);
+  position:relative;z-index:1;text-align:center;padding:7rem 2rem;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(91,29,232,0.12),transparent);
+  border-top:1px solid rgba(140,100,255,0.08);
 }
-.cta h2{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;letter-spacing:-.04em;margin-bottom:1rem;line-height:1.1}
-.cta p{font-size:1rem;color:rgba(255,255,255,0.45);max-width:400px;margin:0 auto 2.5rem;line-height:1.7}
+.cta h2{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(1.8rem,4.5vw,3.5rem);font-weight:900;letter-spacing:-.01em;margin-bottom:1rem;line-height:1.15
+}
+.cta p{font-size:1rem;color:rgba(255,255,255,0.4);max-width:420px;margin:0 auto 2.5rem;line-height:1.8}
 
 /* FOOTER */
 footer{
   position:relative;z-index:1;
-  border-top:1px solid rgba(255,255,255,0.06);
-  padding:2rem;
+  border-top:1px solid rgba(140,100,255,0.08);
+  padding:2rem 2.5rem;
   display:flex;align-items:center;justify-content:space-between;
   max-width:1100px;margin:0 auto;flex-wrap:wrap;gap:1rem;
 }
-footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
+footer p{font-size:.78rem;color:rgba(255,255,255,0.2);font-family:'Orbitron',monospace;letter-spacing:.05em}
 .footer-links{display:flex;gap:1.5rem}
-.footer-links a{font-size:.8rem;color:rgba(255,255,255,0.25);text-decoration:none;transition:color .2s}
-.footer-links a:hover{color:rgba(255,255,255,0.6)}
+.footer-links a{font-size:.78rem;color:rgba(255,255,255,0.2);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:#a78bfa}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.2}}
 
 @media(max-width:768px){
   .steps{grid-template-columns:1fr}
   .nav-links{display:none}
-  .stats-row{gap:2rem}
+  .stats-row{flex-direction:column}
+  .stat{border-right:none;border-bottom:1px solid rgba(140,100,255,0.1)}
 }
 </style>
 </head>
 <body>
 
-<div class="bg-gradient"></div>
-<div class="bg-grid"></div>
+<canvas id="stars-canvas"></canvas>
+<div class="nebula"></div>
+
+<!-- STARS SCRIPT -->
+<script>
+const canvas=document.getElementById('stars-canvas');
+const ctx=canvas.getContext('2d');
+let stars=[];
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;initStars()}
+function initStars(){
+  stars=[];
+  const n=Math.floor((canvas.width*canvas.height)/3000);
+  for(let i=0;i<n;i++){
+    stars.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      r:Math.random()*1.5+.2,
+      alpha:Math.random(),
+      speed:Math.random()*.003+.001,
+      phase:Math.random()*Math.PI*2,
+      color:Math.random()>.7?`rgba(167,139,250,`:`rgba(255,255,255,`
+    });
+  }
+}
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const t=Date.now()*.001;
+  for(const s of stars){
+    const a=.3+.7*(Math.sin(t*s.speed*100+s.phase)*.5+.5);
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=s.color+a+')';
+    ctx.fill();
+    if(s.r>1){
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r*2.5,0,Math.PI*2);
+      ctx.fillStyle=s.color+(a*.15)+')';
+      ctx.fill();
+    }
+  }
+  requestAnimationFrame(drawStars);
+}
+window.addEventListener('resize',resize);
+resize();drawStars();
+</script>
 
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">
     <div class="nav-logo-icon">⚙️</div>
-    <span>Rust<b>AI</b></span>
+    <span>RUST<b>AI</b></span>
   </a>
   <ul class="nav-links">
     <li><a href="#how">Как работает</a></li>
     <li><a href="#generator">Генератор</a></li>
     <li><a href="#">Документация</a></li>
   </ul>
-  <button class="nav-btn" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">Попробовать бесплатно</button>
+  <button class="nav-btn" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">🚀 Запустить</button>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-badge">
     <span class="badge-dot"></span>
-    Powered by Claude AI · Oxide/uMod
+    Claude Vision AI · Oxide/uMod · C#
   </div>
-  <h1>Генератор плагинов<br>для <span class="grad">Rust</span> на базе ИИ</h1>
-  <p>Загрузи скриншот любого плагина — и получи готовый рабочий C# код для Oxide/uMod за секунды. Никакого программирования.</p>
+  <h1>Создай плагин<br>для <span class="grad">RUST</span><br>по скриншоту</h1>
+  <p>Загрузи фото или опиши плагин — искусственный интеллект напишет полный рабочий C# код для Oxide/uMod мгновенно</p>
   <div class="hero-actions">
     <button class="btn-main" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">⚙ Открыть генератор</button>
     <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Как это работает →</button>
@@ -253,32 +305,32 @@ footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
 
 <!-- STATS -->
 <div class="stats-row">
-  <div class="stat"><div class="stat-n">C#</div><div class="stat-l">Oxide / uMod совместимый код</div></div>
-  <div class="stat"><div class="stat-n">~15с</div><div class="stat-l">Среднее время генерации</div></div>
-  <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Рабочий production код</div></div>
-  <div class="stat"><div class="stat-n">AI</div><div class="stat-l">Claude Vision анализ</div></div>
+  <div class="stat"><div class="stat-n">C#</div><div class="stat-l">Oxide / uMod код</div></div>
+  <div class="stat"><div class="stat-n">~15с</div><div class="stat-l">Генерация плагина</div></div>
+  <div class="stat"><div class="stat-n">Фото</div><div class="stat-l">Анализ скриншота</div></div>
+  <div class="stat"><div class="stat-n">Текст</div><div class="stat-l">Описание словами</div></div>
 </div>
 
-<!-- HOW IT WORKS -->
+<!-- HOW -->
 <div class="section" id="how">
-  <div class="section-tag">Как работает</div>
+  <div class="section-tag">⭐ Как работает</div>
   <h2 class="section-title">Три шага до готового плагина</h2>
-  <p class="section-sub">Никаких знаний программирования не нужно — ИИ сделает всё за тебя</p>
+  <p class="section-sub">Отправь скриншот или опиши плагин текстом — ИИ сделает всё остальное</p>
   <div class="steps">
     <div class="step">
       <div class="step-num">📸</div>
-      <h3>1. Загрузи скриншот</h3>
-      <p>Сделай скриншот любого плагина, UI элемента, меню или функции в Rust которую хочешь воссоздать</p>
+      <h3>Загрузи скриншот</h3>
+      <p>Скриншот плагина, UI, меню или просто опиши словами что хочешь — оба варианта работают</p>
     </div>
     <div class="step">
-      <div class="step-num">🧠</div>
-      <h3>2. ИИ анализирует</h3>
-      <p>Claude Vision изучает изображение, определяет механики, команды, permissions и структуру плагина</p>
+      <div class="step-num">🌌</div>
+      <h3>ИИ анализирует</h3>
+      <p>Claude Vision изучает изображение и текст, понимает механику, команды и структуру плагина</p>
     </div>
     <div class="step">
       <div class="step-num">⚡</div>
-      <h3>3. Получи код</h3>
-      <p>Готовый рабочий C# плагин для Oxide/uMod — копируй или скачивай .cs файл и устанавливай на сервер</p>
+      <h3>Получи код</h3>
+      <p>Готовый C# плагин для Oxide/uMod — копируй или скачивай .cs файл и ставь на сервер</p>
     </div>
   </div>
 </div>
@@ -286,10 +338,10 @@ footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
 <!-- GENERATOR -->
 <div class="gen-section" id="generator">
   <div class="gen-header">
-    <div class="section-tag">Инструмент</div>
+    <div class="section-tag">⚙ Инструмент</div>
     <h2 class="section-title">Rust Plugin Generator</h2>
-    <p style="color:rgba(255,255,255,0.45);font-size:1rem;max-width:480px;margin:0 auto;line-height:1.7">
-      Загрузи скриншот и получи полный рабочий плагин
+    <p style="color:rgba(255,255,255,0.4);font-size:1rem;max-width:500px;margin:.75rem auto 0;line-height:1.8">
+      Загрузи скриншот или напиши описание — и получи готовый плагин
     </p>
   </div>
   <div class="gen-card">
@@ -297,7 +349,11 @@ footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
       <div class="gen-dot" style="background:#ff5f57"></div>
       <div class="gen-dot" style="background:#febc2e"></div>
       <div class="gen-dot" style="background:#28c840"></div>
-      <span style="margin-left:8px;font-size:.75rem;color:rgba(255,255,255,0.25);font-family:'Courier New',monospace">rust-plugin-generator.ai</span>
+      <span style="margin-left:10px;font-size:.72rem;color:rgba(255,255,255,0.2);font-family:'Orbitron',monospace;letter-spacing:.05em">rust-plugin-generator.ai · online</span>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.7rem;color:#4ade80">
+        <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;box-shadow:0 0 8px #4ade80"></span>
+        Claude AI подключён
+      </span>
     </div>
     <div id="bot-root"></div>
   </div>
@@ -305,14 +361,14 @@ footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
 
 <!-- CTA -->
 <div class="cta">
-  <h2>Готов создать<br>свой плагин?</h2>
-  <p>Скопируй скриншот и получи рабочий код прямо сейчас — это бесплатно</p>
-  <button class="btn-main" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">⚙ Начать генерацию</button>
+  <h2>Готов создать<br><span style="background:linear-gradient(135deg,#a78bfa,#cd7f32);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">свой плагин?</span></h2>
+  <p>Просто загрузи скриншот или опиши что хочешь — это бесплатно</p>
+  <button class="btn-main" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">⚙ Начать прямо сейчас</button>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <p>© 2025 RustAI · Powered by Claude Vision API</p>
+  <p>© 2025 RUSTAI · POWERED BY CLAUDE</p>
   <div class="footer-links">
     <a href="#">GitHub</a>
     <a href="#">Oxide Docs</a>
@@ -323,14 +379,18 @@ footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
 <script type="text/babel">
 const {useState,useRef,useCallback}=React;
 
-const SYSTEM_PROMPT=`You are an expert Rust game (sandbox survival game) plugin developer. 
-You analyze screenshots or images of Rust plugins, UI elements, game mechanics, or plugin configurations and write COMPLETE, WORKING C# plugin code for the Oxide/uMod framework.
-When given an image:
-1. Carefully analyze what plugin or feature is shown
+const API_KEY="sk-ant-api03-N_AMACk-9PceDb1BjcuF9wpE3IjXbs_JJJx86SQOceEDHl2FsfX-4XQfPDX3QI_VatLs4RMCGy5aMFentLh0cQ-tWCjfhgs";
+
+const SYSTEM_PROMPT=`You are an expert Rust game (sandbox survival game) plugin developer.
+You analyze screenshots/images AND text descriptions of Rust plugins, UI elements, game mechanics, or plugin configurations and write COMPLETE, WORKING C# plugin code for the Oxide/uMod framework.
+
+When given an image or text:
+1. Carefully analyze what plugin or feature is described/shown
 2. Write a complete, functional C# plugin for Oxide/uMod
 3. Include all necessary hooks, permissions, commands
 4. Add proper comments and documentation
-5. Make the plugin match EXACTLY what is shown in the image
+5. Make the plugin match EXACTLY what is described or shown
+
 Always output ONLY the complete plugin code, starting with using statements.
 The code must be production-ready and work on a Rust server with Oxide/uMod installed.`;
 
@@ -338,11 +398,13 @@ function Bot(){
   const [image,setImage]=useState(null);
   const [imageBase64,setImageBase64]=useState(null);
   const [imageType,setImageType]=useState(null);
+  const [text,setText]=useState("");
   const [code,setCode]=useState("");
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [copied,setCopied]=useState(false);
   const [drag,setDrag]=useState(false);
+  const [tab,setTab]=useState("image");
   const fileRef=useRef(null);
 
   const processFile=useCallback((file)=>{
@@ -359,22 +421,22 @@ function Bot(){
   const onDrop=useCallback((e)=>{e.preventDefault();setDrag(false);processFile(e.dataTransfer.files[0])},[processFile]);
   const onFile=(e)=>processFile(e.target.files[0]);
 
-  const API_KEY="sk-ant-api03-N_AMACk-9PceDb1BjcuF9wpE3IjXbs_JJJx86SQOceEDHl2FsfX-4XQfPDX3QI_VatLs4RMCGy5aMFentLh0cQ-tWCjfhgs";
-
   const generate=async()=>{
-    if(!imageBase64)return;
+    if(tab==="image"&&!imageBase64){setError("Загрузите изображение");return}
+    if(tab==="text"&&!text.trim()){setError("Введите описание плагина");return}
     setLoading(true);setError("");setCode("");
     try{
+      let content=[];
+      if(tab==="image"&&imageBase64){
+        content.push({type:"image",source:{type:"base64",media_type:imageType,data:imageBase64}});
+        content.push({type:"text",text:"Проанализируй это изображение и напиши полный рабочий плагин для Rust (Oxide/uMod) на C#. Пиши только код без объяснений."});
+      } else {
+        content.push({type:"text",text:`Напиши полный рабочий плагин для Rust (Oxide/uMod) на C# по этому описанию:\n\n${text}\n\nПиши только код без объяснений.`});
+      }
       const res=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:4096,system:SYSTEM_PROMPT,
-          messages:[{role:"user",content:[
-            {type:"image",source:{type:"base64",media_type:imageType,data:imageBase64}},
-            {type:"text",text:"Проанализируй это изображение и напиши полный рабочий плагин для Rust (Oxide/uMod) на C#. Пиши только код без объяснений."}
-          ]}]
-        })
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4096,system:SYSTEM_PROMPT,messages:[{role:"user",content}]})
       });
       const data=await res.json();
       if(data.error)throw new Error(data.error.message);
@@ -392,129 +454,168 @@ function Bot(){
     a.download=`${name}.cs`;a.click();
   };
 
-  const s={
-    wrap:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0",minHeight:"600px"},
-    left:{padding:"2rem",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",gap:"1rem"},
-    right:{padding:"2rem",display:"flex",flexDirection:"column",gap:"1rem"},
-    label:{fontSize:"10px",letterSpacing:"4px",textTransform:"uppercase",color:"rgba(255,255,255,0.25)",borderLeft:"2px solid #7c3aed",paddingLeft:"10px"},
-    dropzone:{
-      border:`2px dashed ${drag?"#a78bfa":image?"rgba(124,58,237,0.4)":"rgba(255,255,255,0.08)"}`,
-      borderRadius:"16px",cursor:"pointer",transition:"all .2s",
-      background:drag?"rgba(124,58,237,0.08)":"rgba(255,255,255,0.02)",
-      flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-      minHeight:"280px",overflow:"hidden",position:"relative",
-    },
-    genBtn:{
-      width:"100%",padding:"14px",border:"none",borderRadius:"12px",
-      background:image&&!loading?"linear-gradient(135deg,#7c3aed,#5b21b6)":"rgba(255,255,255,0.05)",
-      color:image&&!loading?"#fff":"rgba(255,255,255,0.2)",
-      fontSize:"13px",letterSpacing:"3px",textTransform:"uppercase",
-      cursor:image&&!loading?"pointer":"not-allowed",fontFamily:"inherit",fontWeight:"700",
-      transition:"all .2s",
-      boxShadow:image&&!loading?"0 0 30px rgba(124,58,237,0.3)":"none",
-    },
-    codeBox:{
-      flex:1,background:"#0a0b0f",border:"1px solid rgba(255,255,255,0.06)",
-      borderRadius:"12px",overflow:"auto",minHeight:"400px",position:"relative",
-    },
-  };
+  const tabStyle=(active)=>({
+    padding:"8px 20px",border:"none",borderRadius:"8px",
+    background:active?"linear-gradient(135deg,#5b1de8,#7c3aed)":"transparent",
+    color:active?"#fff":"rgba(255,255,255,0.35)",
+    fontSize:"11px",letterSpacing:"3px",textTransform:"uppercase",
+    cursor:"pointer",fontFamily:"inherit",fontWeight:"700",transition:"all .2s",
+    boxShadow:active?"0 0 20px rgba(91,29,232,0.4)":"none",
+  });
 
   return(
-    <div style={s.wrap}>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",minHeight:"640px"}}>
       {/* LEFT */}
-      <div style={s.left}>
-        <div style={s.label}>// Загрузи скриншот плагина</div>
-        <div style={s.dropzone}
-          onClick={()=>fileRef.current?.click()}
-          onDrop={onDrop}
-          onDragOver={(e)=>{e.preventDefault();setDrag(true)}}
-          onDragLeave={()=>setDrag(false)}
-        >
-          {image?(
-            <>
-              <img src={image} alt="" style={{width:"100%",height:"100%",objectFit:"contain",maxHeight:"380px"}}/>
-              <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(transparent,rgba(5,5,8,.95))",padding:"20px 12px 12px",textAlign:"center",fontSize:"10px",letterSpacing:"2px",color:"rgba(255,255,255,0.3)"}}>
-                НАЖМИ ДЛЯ ЗАМЕНЫ
-              </div>
-            </>
-          ):(
-            <div style={{textAlign:"center",padding:"40px 20px"}}>
-              <div style={{fontSize:"52px",marginBottom:"16px",opacity:.25}}>📸</div>
-              <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.35)",marginBottom:"8px"}}>
-                Перетащи скриншот плагина
-              </div>
-              <div style={{fontSize:"11px",color:"rgba(255,255,255,0.15)",marginBottom:"20px"}}>или нажми для выбора файла</div>
-              <div style={{display:"flex",gap:"8px",justifyContent:"center"}}>
-                {["PNG","JPG","WEBP"].map(f=>(
-                  <span key={f} style={{fontSize:"9px",letterSpacing:"2px",padding:"4px 10px",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"6px",color:"rgba(255,255,255,0.25)",fontWeight:"600"}}>{f}</span>
-                ))}
-              </div>
-            </div>
-          )}
+      <div style={{padding:"2rem",borderRight:"1px solid rgba(140,100,255,0.1)",display:"flex",flexDirection:"column",gap:"1rem"}}>
+
+        {/* TABS */}
+        <div style={{display:"flex",gap:"6px",background:"rgba(255,255,255,0.03)",padding:"5px",borderRadius:"12px",border:"1px solid rgba(140,100,255,0.1)"}}>
+          <button style={tabStyle(tab==="image")} onClick={()=>setTab("image")}>📸 Скриншот</button>
+          <button style={tabStyle(tab==="text")} onClick={()=>setTab("text")}>✍️ Текст</button>
         </div>
-        <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{display:"none"}}/>
-        <button style={s.genBtn} onClick={generate} disabled={!image||loading}>
+
+        {tab==="image"?(
+          <>
+            <div style={{fontSize:"9px",letterSpacing:"4px",textTransform:"uppercase",color:"rgba(167,139,250,0.5)",borderLeft:"2px solid #7c3aed",paddingLeft:"10px"}}>
+              // Загрузи скриншот плагина
+            </div>
+            <div
+              onClick={()=>fileRef.current?.click()}
+              onDrop={onDrop}
+              onDragOver={(e)=>{e.preventDefault();setDrag(true)}}
+              onDragLeave={()=>setDrag(false)}
+              style={{
+                border:`2px dashed ${drag?"#a78bfa":image?"rgba(124,58,237,0.5)":"rgba(140,100,255,0.12)"}`,
+                borderRadius:"16px",cursor:"pointer",transition:"all .2s",
+                background:drag?"rgba(91,29,232,0.08)":"rgba(255,255,255,0.01)",
+                flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                minHeight:"300px",overflow:"hidden",position:"relative",
+                boxShadow:drag?"0 0 30px rgba(91,29,232,0.2)":"none",
+              }}
+            >
+              {image?(
+                <>
+                  <img src={image} alt="" style={{width:"100%",height:"100%",objectFit:"contain",maxHeight:"380px"}}/>
+                  <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(transparent,rgba(0,0,15,.95))",padding:"20px 12px 12px",textAlign:"center",fontSize:"9px",letterSpacing:"3px",color:"rgba(167,139,250,0.4)",textTransform:"uppercase"}}>
+                    Нажми для замены
+                  </div>
+                </>
+              ):(
+                <div style={{textAlign:"center",padding:"40px 20px"}}>
+                  <div style={{fontSize:"52px",marginBottom:"16px",opacity:.2,filter:"drop-shadow(0 0 20px rgba(167,139,250,0.5))"}}>🌌</div>
+                  <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.25)",marginBottom:"8px",letterSpacing:".05em"}}>Перетащи скриншот плагина</div>
+                  <div style={{fontSize:"11px",color:"rgba(255,255,255,0.12)",marginBottom:"20px"}}>или нажми для выбора файла</div>
+                  <div style={{display:"flex",gap:"8px",justifyContent:"center"}}>
+                    {["PNG","JPG","WEBP"].map(f=>(
+                      <span key={f} style={{fontSize:"9px",letterSpacing:"2px",padding:"4px 10px",border:"1px solid rgba(167,139,250,0.15)",borderRadius:"6px",color:"rgba(167,139,250,0.3)",fontWeight:"700"}}>{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{display:"none"}}/>
+          </>
+        ):(
+          <>
+            <div style={{fontSize:"9px",letterSpacing:"4px",textTransform:"uppercase",color:"rgba(167,139,250,0.5)",borderLeft:"2px solid #7c3aed",paddingLeft:"10px"}}>
+              // Опиши плагин текстом
+            </div>
+            <textarea
+              value={text}
+              onChange={e=>setText(e.target.value)}
+              placeholder={"Например:\n\nСделай плагин телепортации. Команда /tpr [игрок] отправляет запрос, /tpa принимает. Cooldown 60 секунд. Разрешение rust.tp.use..."}
+              style={{
+                flex:1,minHeight:"300px",background:"rgba(255,255,255,0.02)",
+                border:"1px solid rgba(140,100,255,0.15)",borderRadius:"16px",
+                color:"rgba(255,255,255,0.8)",fontSize:"13px",fontFamily:"'Inter',sans-serif",
+                padding:"16px",resize:"none",outline:"none",lineHeight:"1.7",
+                transition:"border .2s",
+              }}
+              onFocus={e=>e.target.style.borderColor="rgba(167,139,250,0.4)"}
+              onBlur={e=>e.target.style.borderColor="rgba(140,100,255,0.15)"}
+            />
+          </>
+        )}
+
+        <button
+          onClick={generate}
+          disabled={loading||(tab==="image"?!image:!text.trim())}
+          style={{
+            width:"100%",padding:"15px",border:"none",borderRadius:"12px",
+            background:(tab==="image"?image:text.trim())&&!loading
+              ?"linear-gradient(135deg,#5b1de8,#7c3aed)"
+              :"rgba(255,255,255,0.04)",
+            color:(tab==="image"?image:text.trim())&&!loading?"#fff":"rgba(255,255,255,0.15)",
+            fontSize:"12px",letterSpacing:"4px",textTransform:"uppercase",
+            cursor:(tab==="image"?image:text.trim())&&!loading?"pointer":"not-allowed",
+            fontFamily:"inherit",fontWeight:"800",transition:"all .2s",
+            boxShadow:(tab==="image"?image:text.trim())&&!loading?"0 0 30px rgba(91,29,232,0.4)":"none",
+          }}
+        >
           {loading?(
             <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"10px"}}>
               <span style={{width:"14px",height:"14px",border:"2px solid #a78bfa",borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite",display:"inline-block"}}/>
-              ГЕНЕРАЦИЯ...
+              Генерация плагина...
             </span>
-          ):"⚙ СГЕНЕРИРОВАТЬ ПЛАГИН"}
+          ):"⚙ Сгенерировать плагин"}
         </button>
+
         {error&&(
-          <div style={{padding:"12px 14px",background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"10px",fontSize:"12px",color:"#f87171"}}>
+          <div style={{padding:"12px 14px",background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:"10px",fontSize:"12px",color:"#f87171",letterSpacing:".03em"}}>
             ⚠ {error}
           </div>
         )}
       </div>
 
       {/* RIGHT */}
-      <div style={s.right}>
+      <div style={{padding:"2rem",display:"flex",flexDirection:"column",gap:"1rem"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={s.label}>// C# Plugin Output</div>
+          <div style={{fontSize:"9px",letterSpacing:"4px",textTransform:"uppercase",color:"rgba(167,139,250,0.5)",borderLeft:"2px solid #7c3aed",paddingLeft:"10px"}}>
+            // C# Plugin Output
+          </div>
           {code&&(
             <div style={{display:"flex",gap:"8px"}}>
-              <button onClick={copy} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",color:copied?"#a78bfa":"rgba(255,255,255,0.35)",padding:"5px 14px",fontSize:"10px",letterSpacing:"2px",cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase",borderRadius:"8px",transition:"all .2s",fontWeight:"600"}}>
-                {copied?"✓ СКОПИРОВАНО":"КОПИРОВАТЬ"}
+              <button onClick={copy} style={{background:"none",border:"1px solid rgba(167,139,250,0.2)",color:copied?"#a78bfa":"rgba(255,255,255,0.3)",padding:"5px 14px",fontSize:"9px",letterSpacing:"2px",cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase",borderRadius:"8px",transition:"all .2s",fontWeight:"700"}}>
+                {copied?"✓ Скопировано":"Копировать"}
               </button>
-              <button onClick={download} style={{background:"linear-gradient(135deg,#7c3aed,#5b21b6)",border:"none",color:"#fff",padding:"5px 14px",fontSize:"10px",letterSpacing:"2px",cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase",borderRadius:"8px",fontWeight:"600"}}>
-                ↓ .CS ФАЙЛ
+              <button onClick={download} style={{background:"linear-gradient(135deg,#5b1de8,#7c3aed)",border:"none",color:"#fff",padding:"5px 14px",fontSize:"9px",letterSpacing:"2px",cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase",borderRadius:"8px",fontWeight:"700",boxShadow:"0 0 15px rgba(91,29,232,0.4)"}}>
+                ↓ .cs файл
               </button>
             </div>
           )}
         </div>
 
-        <div style={s.codeBox}>
+        <div style={{flex:1,background:"rgba(0,0,10,0.8)",border:"1px solid rgba(140,100,255,0.08)",borderRadius:"14px",overflow:"auto",minHeight:"440px",position:"relative"}}>
           {!code&&!loading&&(
-            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.08)"}}>
-              <div style={{fontSize:"48px",marginBottom:"16px"}}>{"{ }"}</div>
-              <div style={{fontSize:"11px",letterSpacing:"3px",textTransform:"uppercase",fontWeight:"600"}}>КОД ПОЯВИТСЯ ЗДЕСЬ</div>
-              <div style={{fontSize:"10px",marginTop:"8px",opacity:.6}}>Загрузи скриншот → нажми генерацию</div>
+            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.06)"}}>
+              <div style={{fontSize:"52px",marginBottom:"16px",filter:"drop-shadow(0 0 20px rgba(91,29,232,0.3))"}}>{"{ }"}</div>
+              <div style={{fontSize:"10px",letterSpacing:"4px",textTransform:"uppercase",fontWeight:"700"}}>Код появится здесь</div>
+              <div style={{fontSize:"10px",marginTop:"8px",opacity:.6}}>Загрузи скриншот или опиши плагин</div>
             </div>
           )}
           {loading&&(
-            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"20px"}}>
+            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px"}}>
               <div style={{display:"flex",gap:"6px"}}>
                 {[0,1,2,3,4].map(i=>(
-                  <div key={i} style={{width:"4px",height:"28px",background:"#7c3aed",borderRadius:"4px",animation:"wave 1s ease-in-out infinite",animationDelay:`${i*.1}s`,opacity:.8}}/>
+                  <div key={i} style={{width:"4px",height:"30px",background:"linear-gradient(#a78bfa,#5b1de8)",borderRadius:"4px",animation:"wave 1s ease-in-out infinite",animationDelay:`${i*.12}s`,boxShadow:"0 0 10px rgba(167,139,250,0.5)"}}/>
                 ))}
               </div>
-              <div style={{fontSize:"11px",letterSpacing:"3px",color:"rgba(255,255,255,0.25)",textTransform:"uppercase",fontWeight:"600"}}>
-                Анализ изображения...
+              <div style={{fontSize:"10px",letterSpacing:"4px",color:"rgba(167,139,250,0.4)",textTransform:"uppercase",fontWeight:"700"}}>
+                ИИ анализирует...
               </div>
             </div>
           )}
           {code&&(
-            <pre style={{margin:0,padding:"20px",fontSize:"12px",lineHeight:"1.75",color:"#c8b89a",whiteSpace:"pre-wrap",wordBreak:"break-word",fontFamily:"'Courier New',monospace"}}>
+            <pre style={{margin:0,padding:"20px",fontSize:"12px",lineHeight:"1.8",color:"#c8b89a",whiteSpace:"pre-wrap",wordBreak:"break-word",fontFamily:"'Courier New',monospace"}}>
               {code.split("\n").map((line,i)=>{
-                let c="#c8b89a";
+                let c="#b8a898";
                 if(line.trim().startsWith("//"))c="#6a8a5a";
                 else if(/^\s*(using|namespace|class|public|private|protected|static|void|override|new|return|if|else|for|foreach|var|string|int|bool|float|List|Dictionary)\b/.test(line))c="#a78bfa";
                 else if(/^\s*\[/.test(line))c="#7a9a6a";
                 else if(line.includes('"'))c="#7ab8a0";
                 return(
                   <span key={i} style={{display:"block",color:c}}>
-                    <span style={{color:"rgba(255,255,255,0.1)",userSelect:"none",marginRight:"16px",fontSize:"10px"}}>{String(i+1).padStart(3," ")}</span>
+                    <span style={{color:"rgba(255,255,255,0.08)",userSelect:"none",marginRight:"16px",fontSize:"10px"}}>{String(i+1).padStart(3," ")}</span>
                     {line}
                   </span>
                 );
@@ -524,24 +625,25 @@ function Bot(){
         </div>
 
         {code&&(
-          <div style={{display:"flex",gap:"20px",padding:"10px 14px",background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.15)",borderRadius:"10px",fontSize:"11px",color:"rgba(255,255,255,0.3)",fontWeight:"500"}}>
+          <div style={{display:"flex",gap:"20px",padding:"10px 16px",background:"rgba(91,29,232,0.06)",border:"1px solid rgba(140,100,255,0.12)",borderRadius:"10px",fontSize:"11px",color:"rgba(255,255,255,0.25)",fontWeight:"600"}}>
             <span>📄 {code.split("\n").length} строк</span>
             <span>🔤 {code.length} символов</span>
-            <span style={{marginLeft:"auto",color:"#6a9a5a"}}>✓ Oxide/uMod совместим</span>
+            <span style={{marginLeft:"auto",color:"#4ade80"}}>✓ Oxide/uMod совместим</span>
           </div>
         )}
       </div>
 
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1.3)}}
+        @keyframes wave{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1.4)}}
         ::-webkit-scrollbar{width:4px;height:4px}
-        ::-webkit-scrollbar-track{background:#0a0b0f}
-        ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:4px}
-        ::-webkit-scrollbar-thumb:hover{background:rgba(124,58,237,0.6)}
-        @media(max-width:768px){
+        ::-webkit-scrollbar-track{background:rgba(0,0,10,.8)}
+        ::-webkit-scrollbar-thumb{background:rgba(91,29,232,0.4);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(91,29,232,0.7)}
+        textarea::placeholder{color:rgba(255,255,255,0.15)!important}
+        @media(max-width:900px){
           div[style*="gridTemplateColumns: 1fr 1fr"]{grid-template-columns:1fr!important}
-          div[style*="borderRight"]{border-right:none!important;border-bottom:1px solid rgba(255,255,255,0.06)}
+          div[style*="borderRight"]{border-right:none!important;border-bottom:1px solid rgba(140,100,255,0.1)}
         }
       `}</style>
     </div>
