@@ -3,1195 +3,551 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude — AI от Anthropic</title>
-<link href="https://fonts.googleapis.com/css2?family=Tiempos+Headline:wght@400;500&family=Styrene+A:wght@400;500&display=swap" rel="stylesheet">
+<title>RustAI — Генератор плагинов</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #1a1915;
-    --surface: #232220;
-    --surface2: #2d2b28;
-    --border: #3a3834;
-    --text-primary: #f0ece3;
-    --text-secondary: #9c9689;
-    --text-muted: #5c5a55;
-    --accent: #d97757;
-    --accent2: #cc785c;
-    --accent-soft: rgba(217,119,87,0.12);
-    --accent-glow: rgba(217,119,87,0.05);
-    --radius: 14px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text-primary);
-    font-family: 'Styrene A', 'DM Sans', system-ui, sans-serif;
-    line-height: 1.6;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
-  /* NAV */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    padding: 0 2rem;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(26,25,21,0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-  }
-
-  .nav-logo svg { width: 28px; height: 28px; }
-
-  .nav-logo span {
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    letter-spacing: -0.01em;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    list-style: none;
-  }
-
-  .nav-links a {
-    text-decoration: none;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    transition: color 0.2s;
-  }
-
-  .nav-links a:hover { color: var(--text-primary); }
-
-  .nav-cta {
-    background: var(--accent);
-    color: #fff !important;
-    padding: 0.45rem 1.1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background 0.2s, opacity 0.2s !important;
-  }
-  .nav-cta:hover { background: var(--accent2) !important; opacity: 0.95; }
-
-  /* HERO */
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 6rem 2rem 4rem;
-    overflow: hidden;
-  }
-
-  .hero-glow {
-    position: absolute;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 700px;
-    height: 400px;
-    background: radial-gradient(ellipse, rgba(217,119,87,0.09) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--accent-soft);
-    border: 1px solid rgba(217,119,87,0.25);
-    border-radius: 100px;
-    padding: 5px 14px;
-    font-size: 0.78rem;
-    color: var(--accent);
-    margin-bottom: 2rem;
-    animation: fadeUp 0.7s ease forwards;
-    opacity: 0;
-  }
-
-  .hero-badge::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .hero h1 {
-    font-family: 'Tiempos Headline', Georgia, serif;
-    font-size: clamp(3rem, 7vw, 5.5rem);
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    max-width: 820px;
-    margin-bottom: 1.5rem;
-    animation: fadeUp 0.7s ease 0.1s forwards;
-    opacity: 0;
-  }
-
-  .hero h1 em {
-    font-style: italic;
-    color: var(--accent);
-  }
-
-  .hero p {
-    font-size: 1.125rem;
-    color: var(--text-secondary);
-    max-width: 520px;
-    margin-bottom: 2.5rem;
-    line-height: 1.7;
-    animation: fadeUp 0.7s ease 0.2s forwards;
-    opacity: 0;
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    animation: fadeUp 0.7s ease 0.3s forwards;
-    opacity: 0;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 0.8rem 1.8rem;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .btn-primary:hover {
-    background: var(--accent2);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(217,119,87,0.3);
-  }
-
-  .btn-secondary {
-    background: var(--surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    padding: 0.8rem 1.8rem;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .btn-secondary:hover {
-    background: var(--surface2);
-    border-color: #4a4844;
-    transform: translateY(-1px);
-  }
-
-  /* CHAT PREVIEW */
-  .chat-preview {
-    position: relative;
-    width: 100%;
-    max-width: 720px;
-    margin: 4rem auto 0;
-    animation: fadeUp 0.8s ease 0.4s forwards;
-    opacity: 0;
-  }
-
-  .chat-window {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-  }
-
-  .chat-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-  }
-
-  .chat-header-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    opacity: 0.8;
-  }
-
-  .chat-header span {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .chat-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-
-  .msg {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    animation: fadeIn 0.5s ease forwards;
-    opacity: 0;
-  }
-
-  .msg:nth-child(1) { animation-delay: 1.2s; }
-  .msg:nth-child(2) { animation-delay: 1.8s; }
-  .msg:nth-child(3) { animation-delay: 2.4s; }
-
-  .msg-avatar {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-
-  .msg-avatar.user {
-    background: linear-gradient(135deg, #4a6fa5, #6b8cc7);
-    color: #fff;
-  }
-
-  .msg-avatar.claude {
-    background: linear-gradient(135deg, var(--accent), #e8906b);
-    color: #fff;
-  }
-
-  .msg-content {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 90%;
-  }
-
-  .msg.claude .msg-content {
-    background: var(--accent-soft);
-    border-color: rgba(217,119,87,0.2);
-    color: var(--text-primary);
-  }
-
-  .chat-input {
-    margin: 0 1.5rem 1.5rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 0.9rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .chat-input span {
-    flex: 1;
-    font-size: 0.875rem;
-    color: var(--text-muted);
-  }
-
-  .chat-input-btn {
-    width: 32px; height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  /* FEATURES */
-  .section {
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 6rem 2rem;
-  }
-
-  .section-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
-  }
-
-  .section-title {
-    font-family: 'Tiempos Headline', Georgia, serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    max-width: 540px;
-    margin-bottom: 3.5rem;
-    line-height: 1.2;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-  }
-
-  .feature-card {
-    background: var(--surface);
-    padding: 2rem;
-    transition: background 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .feature-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top left, var(--accent-glow), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .feature-card:hover { background: var(--surface2); }
-  .feature-card:hover::before { opacity: 1; }
-
-  .feature-icon {
-    width: 40px; height: 40px;
-    background: var(--accent-soft);
-    border: 1px solid rgba(217,119,87,0.2);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1.25rem;
-    font-size: 1.1rem;
-  }
-
-  .feature-card h3 {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .feature-card p {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-  }
-
-  /* STATS */
-  .stats {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .stats-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 4rem 2rem;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-family: 'Tiempos Headline', Georgia, serif;
-    font-size: 3rem;
-    font-weight: 400;
-    color: var(--text-primary);
-    letter-spacing: -0.03em;
-  }
-
-  .stat-num span { color: var(--accent); }
-
-  .stat-label {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-top: 0.3rem;
-  }
-
-  /* BOT SECTION */
-  .bot-section {
-    position: relative;
-    z-index: 1;
-    padding: 6rem 2rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .bot-section-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .bot-wrapper {
-    margin-top: 3rem;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-  }
-
-  /* CTA */
-  .cta-section {
-    text-align: center;
-    padding: 6rem 2rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px; height: 300px;
-    background: radial-gradient(ellipse, rgba(217,119,87,0.07), transparent 70%);
-    pointer-events: none;
-  }
-
-  .cta-section h2 {
-    font-family: 'Tiempos Headline', Georgia, serif;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    margin-bottom: 1.25rem;
-    line-height: 1.15;
-  }
-
-  .cta-section p {
-    font-size: 1.05rem;
-    color: var(--text-secondary);
-    max-width: 420px;
-    margin: 0 auto 2.5rem;
-  }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 2.5rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1100px;
-    margin: 0 auto;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  footer p {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .footer-links a {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .footer-links a:hover { color: var(--text-secondary); }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    .features-grid { grid-template-columns: 1fr; }
-    .stats-inner { grid-template-columns: 1fr; }
-    .nav-links { display: none; }
-    .hero h1 { font-size: 2.8rem; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:#050508;
+  color:#fff;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* BG */
+.bg-gradient{
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(120,80,255,0.25),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 60%,rgba(205,127,50,0.1),transparent),
+    radial-gradient(ellipse 40% 30% at 10% 80%,rgba(80,120,255,0.08),transparent);
+}
+.bg-grid{
+  position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 100% 100% at 50% 0%,black 40%,transparent 100%);
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 2rem;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(5,5,8,0.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-icon{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#7c3aed,#cd7f32);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.nav-logo span{font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:-0.02em}
+.nav-logo span b{color:#a78bfa}
+.nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:rgba(255,255,255,0.5);font-size:0.875rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-btn{
+  background:linear-gradient(135deg,#7c3aed,#5b21b6);
+  color:#fff;border:none;padding:.5rem 1.2rem;border-radius:8px;
+  font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:opacity .2s,transform .2s;
+}
+.nav-btn:hover{opacity:.85;transform:translateY(-1px)}
+
+/* HERO */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:6rem 2rem 4rem;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(124,58,237,0.15);
+  border:1px solid rgba(124,58,237,0.4);
+  border-radius:100px;padding:6px 16px;
+  font-size:.78rem;font-weight:600;color:#a78bfa;
+  margin-bottom:2rem;letter-spacing:.05em;text-transform:uppercase;
+  animation:fadeUp .6s ease forwards;opacity:0;
+}
+.badge-dot{width:6px;height:6px;background:#a78bfa;border-radius:50%;animation:pulse 2s infinite}
+.hero h1{
+  font-size:clamp(2.8rem,7vw,5.5rem);font-weight:900;
+  line-height:1.05;letter-spacing:-.04em;
+  margin-bottom:1.5rem;
+  animation:fadeUp .6s ease .1s forwards;opacity:0;
+}
+.hero h1 .grad{
+  background:linear-gradient(135deg,#a78bfa 0%,#cd7f32 50%,#f59e0b 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p{
+  font-size:1.125rem;color:rgba(255,255,255,0.55);max-width:520px;
+  margin-bottom:2.5rem;line-height:1.75;
+  animation:fadeUp .6s ease .2s forwards;opacity:0;
+}
+.hero-actions{
+  display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp .6s ease .3s forwards;opacity:0;
+  margin-bottom:4rem;
+}
+.btn-main{
+  background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;
+  padding:.85rem 2rem;border-radius:12px;font-size:1rem;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+  box-shadow:0 0 40px rgba(124,58,237,0.35);
+}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(124,58,237,0.5)}
+.btn-ghost{
+  background:rgba(255,255,255,0.06);color:#fff;
+  border:1px solid rgba(255,255,255,0.12);
+  padding:.85rem 2rem;border-radius:12px;font-size:1rem;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
+
+/* STATS */
+.stats-row{
+  position:relative;z-index:1;
+  display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;
+  padding:3rem 2rem;
+  border-top:1px solid rgba(255,255,255,0.06);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.02);
+}
+.stat{text-align:center}
+.stat-n{font-size:2.2rem;font-weight:900;letter-spacing:-.03em;
+  background:linear-gradient(135deg,#a78bfa,#cd7f32);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-l{font-size:.8rem;color:rgba(255,255,255,0.4);margin-top:.25rem;font-weight:500}
+
+/* HOW IT WORKS */
+.section{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:6rem 2rem}
+.section-tag{
+  display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;color:#a78bfa;margin-bottom:.75rem;
+}
+.section-title{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin-bottom:1rem;line-height:1.15}
+.section-sub{font-size:1rem;color:rgba(255,255,255,0.45);max-width:480px;line-height:1.7;margin-bottom:3.5rem}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.step{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px;padding:2rem;
+  transition:all .3s;position:relative;overflow:hidden;
+}
+.step::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at top left,rgba(124,58,237,0.08),transparent 60%);
+  opacity:0;transition:opacity .3s;
+}
+.step:hover{border-color:rgba(124,58,237,0.3);transform:translateY(-4px)}
+.step:hover::before{opacity:1}
+.step-num{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(205,127,50,0.3));
+  border:1px solid rgba(124,58,237,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;margin-bottom:1.25rem;
+}
+.step h3{font-size:1rem;font-weight:700;margin-bottom:.5rem;color:#fff}
+.step p{font-size:.875rem;color:rgba(255,255,255,0.45);line-height:1.65}
+
+/* GENERATOR */
+.gen-section{
+  position:relative;z-index:1;
+  padding:4rem 2rem 6rem;
+  max-width:1300px;margin:0 auto;
+}
+.gen-header{text-align:center;margin-bottom:3rem}
+.gen-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.02);
+}
+.gen-topbar{
+  padding:1rem 1.5rem;
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:center;gap:8px;
+}
+.gen-dot{width:12px;height:12px;border-radius:50%}
+
+/* CTA */
+.cta{
+  position:relative;z-index:1;
+  text-align:center;padding:6rem 2rem;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(124,58,237,0.12),transparent);
+  border-top:1px solid rgba(255,255,255,0.05);
+}
+.cta h2{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;letter-spacing:-.04em;margin-bottom:1rem;line-height:1.1}
+.cta p{font-size:1rem;color:rgba(255,255,255,0.45);max-width:400px;margin:0 auto 2.5rem;line-height:1.7}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid rgba(255,255,255,0.06);
+  padding:2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1100px;margin:0 auto;flex-wrap:wrap;gap:1rem;
+}
+footer p{font-size:.8rem;color:rgba(255,255,255,0.25)}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{font-size:.8rem;color:rgba(255,255,255,0.25);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:rgba(255,255,255,0.6)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+@media(max-width:768px){
+  .steps{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .stats-row{gap:2rem}
+}
 </style>
 </head>
 <body>
 
+<div class="bg-gradient"></div>
+<div class="bg-grid"></div>
+
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">
-    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="18" cy="18" r="17" fill="rgba(217,119,87,0.15)" stroke="rgba(217,119,87,0.4)" stroke-width="1.5"/>
-      <path d="M12 22L14.5 15L18 22L21.5 15L24 22" stroke="#D97757" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="18" cy="11" r="2" fill="#D97757"/>
-    </svg>
-    <span>Claude</span>
+    <div class="nav-logo-icon">⚙️</div>
+    <span>Rust<b>AI</b></span>
   </a>
   <ul class="nav-links">
-    <li><a href="#">Продукты</a></li>
-    <li><a href="#">API</a></li>
-    <li><a href="#">Исследования</a></li>
-    <li><a href="#bot-section">Rust Generator</a></li>
-    <li><a href="#" class="nav-cta">Попробовать</a></li>
+    <li><a href="#how">Как работает</a></li>
+    <li><a href="#generator">Генератор</a></li>
+    <li><a href="#">Документация</a></li>
   </ul>
+  <button class="nav-btn" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">Попробовать бесплатно</button>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-badge">Claude 4 · Теперь доступен</div>
-  <h1>Думает <em>глубоко</em>,<br>помогает честно</h1>
-  <p>Умный ИИ-ассистент от Anthropic. Создан с фокусом на безопасность, точность и подлинную пользу для вас.</p>
-  <div class="hero-actions">
-    <button class="btn-primary">Начать бесплатно</button>
-    <button class="btn-secondary">Узнать больше</button>
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Powered by Claude AI · Oxide/uMod
   </div>
-
-  <div class="chat-preview">
-    <div class="chat-window">
-      <div class="chat-header">
-        <div class="chat-header-dot"></div>
-        <span>Claude · Активен</span>
-      </div>
-      <div class="chat-body">
-        <div class="msg user">
-          <div class="msg-avatar user">ВЫ</div>
-          <div class="msg-content">Объясни квантовые вычисления простыми словами</div>
-        </div>
-        <div class="msg claude">
-          <div class="msg-avatar claude">C</div>
-          <div class="msg-content">Квантовые компьютеры — это как монета, которая одновременно орёл и решка, пока вы её не посмотрели. Обычные компьютеры работают с битами: 0 или 1. Квантовые — с кубитами, которые могут быть 0, 1 или обоими сразу. Это позволяет решать определённые задачи экспоненциально быстрее.</div>
-        </div>
-        <div class="msg user">
-          <div class="msg-avatar user">ВЫ</div>
-          <div class="msg-content">Дай пример реального применения</div>
-        </div>
-      </div>
-      <div class="chat-input">
-        <span>Спросите что угодно...</span>
-        <div class="chat-input-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </div>
-      </div>
-    </div>
+  <h1>Генератор плагинов<br>для <span class="grad">Rust</span> на базе ИИ</h1>
+  <p>Загрузи скриншот любого плагина — и получи готовый рабочий C# код для Oxide/uMod за секунды. Никакого программирования.</p>
+  <div class="hero-actions">
+    <button class="btn-main" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">⚙ Открыть генератор</button>
+    <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Как это работает →</button>
   </div>
 </section>
 
 <!-- STATS -->
-<div class="stats">
-  <div class="stats-inner">
-    <div>
-      <div class="stat-num">200<span>K</span></div>
-      <div class="stat-label">токенов контекстного окна</div>
+<div class="stats-row">
+  <div class="stat"><div class="stat-n">C#</div><div class="stat-l">Oxide / uMod совместимый код</div></div>
+  <div class="stat"><div class="stat-n">~15с</div><div class="stat-l">Среднее время генерации</div></div>
+  <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Рабочий production код</div></div>
+  <div class="stat"><div class="stat-n">AI</div><div class="stat-l">Claude Vision анализ</div></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" id="how">
+  <div class="section-tag">Как работает</div>
+  <h2 class="section-title">Три шага до готового плагина</h2>
+  <p class="section-sub">Никаких знаний программирования не нужно — ИИ сделает всё за тебя</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">📸</div>
+      <h3>1. Загрузи скриншот</h3>
+      <p>Сделай скриншот любого плагина, UI элемента, меню или функции в Rust которую хочешь воссоздать</p>
     </div>
-    <div>
-      <div class="stat-num">100<span>+</span></div>
-      <div class="stat-label">языков понимает Claude</div>
+    <div class="step">
+      <div class="step-num">🧠</div>
+      <h3>2. ИИ анализирует</h3>
+      <p>Claude Vision изучает изображение, определяет механики, команды, permissions и структуру плагина</p>
     </div>
-    <div>
-      <div class="stat-num">99<span>%</span></div>
-      <div class="stat-label">uptime по всему миру</div>
+    <div class="step">
+      <div class="step-num">⚡</div>
+      <h3>3. Получи код</h3>
+      <p>Готовый рабочий C# плагин для Oxide/uMod — копируй или скачивай .cs файл и устанавливай на сервер</p>
     </div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<div class="section">
-  <div class="section-label">Возможности</div>
-  <h2 class="section-title">Всё, что нужно для работы с AI</h2>
-
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">🔍</div>
-      <h3>Глубокий анализ</h3>
-      <p>Разбирает сложные документы, код и данные. Находит паттерны там, где другие видят шум.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">✍️</div>
-      <h3>Умное письмо</h3>
-      <p>От технических отчётов до творческой прозы — адаптируется под ваш стиль и задачи.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">💻</div>
-      <h3>Разработка кода</h3>
-      <p>Пишет, отлаживает и объясняет код на десятках языков программирования.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🧠</div>
-      <h3>Длинный контекст</h3>
-      <p>Удерживает 200K токенов. Анализирует целые книги и кодовые базы за один раз.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🛡️</div>
-      <h3>Безопасность</h3>
-      <p>Конституциональный AI — ответы не только умные, но и этически выверенные.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">⚡</div>
-      <h3>API доступ</h3>
-      <p>Интеграция в любое приложение. Гибкие планы для стартапов и enterprise.</p>
-    </div>
-  </div>
-</div>
-
-<!-- BOT SECTION -->
-<div class="bot-section" id="bot-section">
-  <div class="bot-section-inner">
-    <div class="section-label">Инструменты · Rust</div>
+<!-- GENERATOR -->
+<div class="gen-section" id="generator">
+  <div class="gen-header">
+    <div class="section-tag">Инструмент</div>
     <h2 class="section-title">Rust Plugin Generator</h2>
-    <p style="color:var(--text-secondary);font-size:1rem;margin-top:-2rem;margin-bottom:0;max-width:560px;line-height:1.7;">
-      Загрузи скриншот плагина или UI из Rust — и Claude напишет полный рабочий C# плагин для Oxide/uMod за секунды.
+    <p style="color:rgba(255,255,255,0.45);font-size:1rem;max-width:480px;margin:0 auto;line-height:1.7">
+      Загрузи скриншот и получи полный рабочий плагин
     </p>
-    <div class="bot-wrapper">
-      <div id="rust-bot-root"></div>
+  </div>
+  <div class="gen-card">
+    <div class="gen-topbar">
+      <div class="gen-dot" style="background:#ff5f57"></div>
+      <div class="gen-dot" style="background:#febc2e"></div>
+      <div class="gen-dot" style="background:#28c840"></div>
+      <span style="margin-left:8px;font-size:.75rem;color:rgba(255,255,255,0.25);font-family:'Courier New',monospace">rust-plugin-generator.ai</span>
     </div>
+    <div id="bot-root"></div>
   </div>
 </div>
 
 <!-- CTA -->
-<div class="cta-section">
-  <h2>Готовы начать<br>думать иначе?</h2>
-  <p>Присоединяйтесь к миллионам людей, которые уже работают с Claude.</p>
-  <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
-    <button class="btn-primary">Создать аккаунт бесплатно</button>
-    <button class="btn-secondary">Документация API →</button>
-  </div>
+<div class="cta">
+  <h2>Готов создать<br>свой плагин?</h2>
+  <p>Скопируй скриншот и получи рабочий код прямо сейчас — это бесплатно</p>
+  <button class="btn-main" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">⚙ Начать генерацию</button>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <p>© 2024 Anthropic PBC · Сан-Франциско, CA</p>
+  <p>© 2025 RustAI · Powered by Claude Vision API</p>
   <div class="footer-links">
-    <a href="#">Конфиденциальность</a>
-    <a href="#">Условия</a>
-    <a href="#">Безопасность</a>
-    <a href="#">Карьера</a>
+    <a href="#">GitHub</a>
+    <a href="#">Oxide Docs</a>
+    <a href="#">API</a>
   </div>
 </footer>
 
-<!-- RUST BOT REACT COMPONENT -->
 <script type="text/babel">
-const { useState, useRef, useCallback } = React;
+const {useState,useRef,useCallback}=React;
 
-const SYSTEM_PROMPT = `You are an expert Rust game (sandbox survival game) plugin developer. 
+const SYSTEM_PROMPT=`You are an expert Rust game (sandbox survival game) plugin developer. 
 You analyze screenshots or images of Rust plugins, UI elements, game mechanics, or plugin configurations and write COMPLETE, WORKING C# plugin code for the Oxide/uMod framework.
-
 When given an image:
 1. Carefully analyze what plugin or feature is shown
 2. Write a complete, functional C# plugin for Oxide/uMod
 3. Include all necessary hooks, permissions, commands
 4. Add proper comments and documentation
 5. Make the plugin match EXACTLY what is shown in the image
-
 Always output ONLY the complete plugin code, starting with using statements.
 The code must be production-ready and work on a Rust server with Oxide/uMod installed.`;
 
-function RustPluginGenerator() {
-  const [image, setImage] = useState(null);
-  const [imageBase64, setImageBase64] = useState(null);
-  const [imageType, setImageType] = useState(null);
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileRef = useRef(null);
+function Bot(){
+  const [image,setImage]=useState(null);
+  const [imageBase64,setImageBase64]=useState(null);
+  const [imageType,setImageType]=useState(null);
+  const [code,setCode]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
+  const [copied,setCopied]=useState(false);
+  const [drag,setDrag]=useState(false);
+  const fileRef=useRef(null);
 
-  const processFile = useCallback((file) => {
-    if (!file || !file.type.startsWith("image/")) {
-      setError("Загрузите изображение (PNG, JPG, WebP)");
-      return;
-    }
-    setError("");
-    setCode("");
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      const base64 = dataUrl.split(",")[1];
-      setImage(dataUrl);
-      setImageBase64(base64);
-      setImageType(file.type);
+  const processFile=useCallback((file)=>{
+    if(!file||!file.type.startsWith("image/")){setError("Загрузите изображение (PNG, JPG, WebP)");return}
+    setError("");setCode("");
+    const r=new FileReader();
+    r.onload=(e)=>{
+      const d=e.target.result;
+      setImage(d);setImageBase64(d.split(",")[1]);setImageType(file.type);
     };
-    reader.readAsDataURL(file);
-  }, []);
+    r.readAsDataURL(file);
+  },[]);
 
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    processFile(file);
-  }, [processFile]);
+  const onDrop=useCallback((e)=>{e.preventDefault();setDrag(false);processFile(e.dataTransfer.files[0])},[processFile]);
+  const onFile=(e)=>processFile(e.target.files[0]);
 
-  const handleFileChange = (e) => processFile(e.target.files[0]);
-
-  const generate = async () => {
-    if (!imageBase64) return;
-    setLoading(true);
-    setError("");
-    setCode("");
-
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4096,
-          system: SYSTEM_PROMPT,
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: imageType,
-                    data: imageBase64,
-                  },
-                },
-                {
-                  type: "text",
-                  text: "Проанализируй это изображение и напиши полный рабочий плагин для Rust (Oxide/uMod) на C#, который точно воспроизводит то, что показано на скриншоте. Пиши только код плагина без объяснений.",
-                },
-              ],
-            },
-          ],
-        }),
+  const generate=async()=>{
+    if(!imageBase64)return;
+    setLoading(true);setError("");setCode("");
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:4096,system:SYSTEM_PROMPT,
+          messages:[{role:"user",content:[
+            {type:"image",source:{type:"base64",media_type:imageType,data:imageBase64}},
+            {type:"text",text:"Проанализируй это изображение и напиши полный рабочий плагин для Rust (Oxide/uMod) на C#. Пиши только код без объяснений."}
+          ]}]
+        })
       });
-
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-      const text = data.content?.find((b) => b.type === "text")?.text || "";
-      setCode(text.replace(/^```(?:csharp|cs)?\n?/, "").replace(/\n?```$/, ""));
-    } catch (err) {
-      setError("Ошибка генерации: " + err.message);
-    } finally {
-      setLoading(false);
-    }
+      const data=await res.json();
+      if(data.error)throw new Error(data.error.message);
+      const txt=data.content?.find(b=>b.type==="text")?.text||"";
+      setCode(txt.replace(/^```(?:csharp|cs)?\n?/,"").replace(/\n?```$/,""));
+    }catch(err){setError("Ошибка: "+err.message)}
+    finally{setLoading(false)}
   };
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copy=()=>{navigator.clipboard.writeText(code);setCopied(true);setTimeout(()=>setCopied(false),2000)};
+  const download=()=>{
+    const name=code.match(/class\s+(\w+)\s*:/)?.[1]||"RustPlugin";
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([code],{type:"text/plain"}));
+    a.download=`${name}.cs`;a.click();
   };
 
-  const downloadCode = () => {
-    const pluginName = code.match(/class\s+(\w+)\s*:/)?.[1] || "RustPlugin";
-    const blob = new Blob([code], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${pluginName}.cs`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const s={
+    wrap:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0",minHeight:"600px"},
+    left:{padding:"2rem",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",gap:"1rem"},
+    right:{padding:"2rem",display:"flex",flexDirection:"column",gap:"1rem"},
+    label:{fontSize:"10px",letterSpacing:"4px",textTransform:"uppercase",color:"rgba(255,255,255,0.25)",borderLeft:"2px solid #7c3aed",paddingLeft:"10px"},
+    dropzone:{
+      border:`2px dashed ${drag?"#a78bfa":image?"rgba(124,58,237,0.4)":"rgba(255,255,255,0.08)"}`,
+      borderRadius:"16px",cursor:"pointer",transition:"all .2s",
+      background:drag?"rgba(124,58,237,0.08)":"rgba(255,255,255,0.02)",
+      flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+      minHeight:"280px",overflow:"hidden",position:"relative",
+    },
+    genBtn:{
+      width:"100%",padding:"14px",border:"none",borderRadius:"12px",
+      background:image&&!loading?"linear-gradient(135deg,#7c3aed,#5b21b6)":"rgba(255,255,255,0.05)",
+      color:image&&!loading?"#fff":"rgba(255,255,255,0.2)",
+      fontSize:"13px",letterSpacing:"3px",textTransform:"uppercase",
+      cursor:image&&!loading?"pointer":"not-allowed",fontFamily:"inherit",fontWeight:"700",
+      transition:"all .2s",
+      boxShadow:image&&!loading?"0 0 30px rgba(124,58,237,0.3)":"none",
+    },
+    codeBox:{
+      flex:1,background:"#0a0b0f",border:"1px solid rgba(255,255,255,0.06)",
+      borderRadius:"12px",overflow:"auto",minHeight:"400px",position:"relative",
+    },
   };
 
-  return (
-    <div style={{
-      background: "#0a0c0f",
-      fontFamily: "'Courier New', monospace",
-      color: "#e8e0d0",
-      padding: "32px 24px",
-      position: "relative",
-      overflow: "hidden",
-    }}>
-      {/* Animated background grid */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        backgroundImage: `
-          linear-gradient(rgba(205, 127, 50, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(205, 127, 50, 0.03) 1px, transparent 1px)
-        `,
-        backgroundSize: "40px 40px",
-        pointerEvents: "none",
-        zIndex: 0,
-      }} />
-
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: "radial-gradient(ellipse at 20% 80%, rgba(139, 69, 19, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(205, 127, 50, 0.05) 0%, transparent 50%)",
-        pointerEvents: "none",
-        zIndex: 0,
-      }} />
-
-      <div style={{ position: "relative", zIndex: 1 }}>
-        {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "8px" }}>
-            <div style={{
-              width: "48px", height: "48px",
-              background: "linear-gradient(135deg, #cd7f32, #8b4513)",
-              clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "20px",
-            }}>⚙</div>
-            <div>
-              <h2 style={{
-                fontSize: "22px",
-                fontWeight: "700",
-                letterSpacing: "4px",
-                textTransform: "uppercase",
-                margin: 0,
-                background: "linear-gradient(90deg, #cd7f32, #e8a050, #cd7f32)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundSize: "200% 100%",
-                animation: "shimmer 3s infinite linear",
-              }}>
-                RUST PLUGIN.GEN
-              </h2>
-              <p style={{ margin: 0, fontSize: "11px", letterSpacing: "3px", color: "#6b5a3e", textTransform: "uppercase" }}>
-                AI-powered // Oxide/uMod // C# Code Generator
-              </p>
+  return(
+    <div style={s.wrap}>
+      {/* LEFT */}
+      <div style={s.left}>
+        <div style={s.label}>// Загрузи скриншот плагина</div>
+        <div style={s.dropzone}
+          onClick={()=>fileRef.current?.click()}
+          onDrop={onDrop}
+          onDragOver={(e)=>{e.preventDefault();setDrag(true)}}
+          onDragLeave={()=>setDrag(false)}
+        >
+          {image?(
+            <>
+              <img src={image} alt="" style={{width:"100%",height:"100%",objectFit:"contain",maxHeight:"380px"}}/>
+              <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(transparent,rgba(5,5,8,.95))",padding:"20px 12px 12px",textAlign:"center",fontSize:"10px",letterSpacing:"2px",color:"rgba(255,255,255,0.3)"}}>
+                НАЖМИ ДЛЯ ЗАМЕНЫ
+              </div>
+            </>
+          ):(
+            <div style={{textAlign:"center",padding:"40px 20px"}}>
+              <div style={{fontSize:"52px",marginBottom:"16px",opacity:.25}}>📸</div>
+              <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.35)",marginBottom:"8px"}}>
+                Перетащи скриншот плагина
+              </div>
+              <div style={{fontSize:"11px",color:"rgba(255,255,255,0.15)",marginBottom:"20px"}}>или нажми для выбора файла</div>
+              <div style={{display:"flex",gap:"8px",justifyContent:"center"}}>
+                {["PNG","JPG","WEBP"].map(f=>(
+                  <span key={f} style={{fontSize:"9px",letterSpacing:"2px",padding:"4px 10px",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"6px",color:"rgba(255,255,255,0.25)",fontWeight:"600"}}>{f}</span>
+                ))}
+              </div>
             </div>
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{display:"none"}}/>
+        <button style={s.genBtn} onClick={generate} disabled={!image||loading}>
+          {loading?(
+            <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"10px"}}>
+              <span style={{width:"14px",height:"14px",border:"2px solid #a78bfa",borderTopColor:"transparent",borderRadius:"50%",animation:"spin .8s linear infinite",display:"inline-block"}}/>
+              ГЕНЕРАЦИЯ...
+            </span>
+          ):"⚙ СГЕНЕРИРОВАТЬ ПЛАГИН"}
+        </button>
+        {error&&(
+          <div style={{padding:"12px 14px",background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:"10px",fontSize:"12px",color:"#f87171"}}>
+            ⚠ {error}
           </div>
-          <div style={{ height: "1px", background: "linear-gradient(90deg, #cd7f32, transparent)", marginTop: "16px" }} />
+        )}
+      </div>
+
+      {/* RIGHT */}
+      <div style={s.right}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={s.label}>// C# Plugin Output</div>
+          {code&&(
+            <div style={{display:"flex",gap:"8px"}}>
+              <button onClick={copy} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",color:copied?"#a78bfa":"rgba(255,255,255,0.35)",padding:"5px 14px",fontSize:"10px",letterSpacing:"2px",cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase",borderRadius:"8px",transition:"all .2s",fontWeight:"600"}}>
+                {copied?"✓ СКОПИРОВАНО":"КОПИРОВАТЬ"}
+              </button>
+              <button onClick={download} style={{background:"linear-gradient(135deg,#7c3aed,#5b21b6)",border:"none",color:"#fff",padding:"5px 14px",fontSize:"10px",letterSpacing:"2px",cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase",borderRadius:"8px",fontWeight:"600"}}>
+                ↓ .CS ФАЙЛ
+              </button>
+            </div>
+          )}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", minHeight: "60vh" }}>
-          {/* Left Panel */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{
-              fontSize: "10px", letterSpacing: "4px", textTransform: "uppercase",
-              color: "#6b5a3e", borderLeft: "2px solid #cd7f32", paddingLeft: "12px",
-            }}>
-              // INPUT — SCREENSHOT
+        <div style={s.codeBox}>
+          {!code&&!loading&&(
+            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.08)"}}>
+              <div style={{fontSize:"48px",marginBottom:"16px"}}>{"{ }"}</div>
+              <div style={{fontSize:"11px",letterSpacing:"3px",textTransform:"uppercase",fontWeight:"600"}}>КОД ПОЯВИТСЯ ЗДЕСЬ</div>
+              <div style={{fontSize:"10px",marginTop:"8px",opacity:.6}}>Загрузи скриншот → нажми генерацию</div>
             </div>
-
-            <div
-              onClick={() => fileRef.current?.click()}
-              onDrop={handleDrop}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              style={{
-                border: `2px dashed ${dragOver ? "#cd7f32" : image ? "#5a3e1e" : "#2a2218"}`,
-                borderRadius: "4px",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                background: dragOver ? "rgba(205, 127, 50, 0.05)" : "rgba(10, 12, 15, 0.8)",
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "300px",
-                overflow: "hidden",
-                position: "relative",
-              }}
-            >
-              {image ? (
-                <>
-                  <img src={image} alt="uploaded" style={{
-                    width: "100%", height: "100%", objectFit: "contain",
-                    maxHeight: "400px",
-                  }} />
-                  <div style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0,
-                    background: "linear-gradient(transparent, rgba(10,12,15,0.9))",
-                    padding: "16px 12px 12px",
-                    fontSize: "10px", letterSpacing: "2px", color: "#6b5a3e",
-                    textAlign: "center",
-                  }}>
-                    НАЖМИ ДЛЯ ЗАМЕНЫ
-                  </div>
-                </>
-              ) : (
-                <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                  <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.3 }}>📸</div>
-                  <div style={{ fontSize: "13px", letterSpacing: "2px", color: "#4a3a28", textTransform: "uppercase" }}>
-                    Перетащи скриншот плагина
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#2a2218", marginTop: "8px", letterSpacing: "1px" }}>
-                    или нажми для выбора файла
-                  </div>
-                  <div style={{ marginTop: "24px", display: "flex", gap: "8px", justifyContent: "center" }}>
-                    {["PNG", "JPG", "WEBP"].map(f => (
-                      <span key={f} style={{
-                        fontSize: "9px", letterSpacing: "2px", padding: "3px 8px",
-                        border: "1px solid #2a2218", color: "#4a3a28",
-                      }}>{f}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
-
-            <button
-              onClick={generate}
-              disabled={!image || loading}
-              style={{
-                width: "100%",
-                padding: "14px",
-                background: image && !loading
-                  ? "linear-gradient(135deg, #8b4513, #cd7f32)"
-                  : "#1a1410",
-                border: "none",
-                color: image && !loading ? "#fff" : "#3a2a1a",
-                fontSize: "12px",
-                letterSpacing: "4px",
-                textTransform: "uppercase",
-                cursor: image && !loading ? "pointer" : "not-allowed",
-                transition: "all 0.2s",
-                fontFamily: "inherit",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              {loading ? (
-                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                  <span style={{
-                    width: "12px", height: "12px",
-                    border: "2px solid #cd7f32",
-                    borderTopColor: "transparent",
-                    borderRadius: "50%",
-                    animation: "spin 0.8s linear infinite",
-                    display: "inline-block",
-                  }} />
-                  ГЕНЕРАЦИЯ ПЛАГИНА...
-                </span>
-              ) : "⚙ СГЕНЕРИРОВАТЬ ПЛАГИН"}
-            </button>
-
-            {error && (
-              <div style={{
-                padding: "12px", background: "rgba(139, 0, 0, 0.1)",
-                border: "1px solid #8b0000", fontSize: "11px", color: "#ff4444",
-                letterSpacing: "1px",
-              }}>
-                ⚠ {error}
+          )}
+          {loading&&(
+            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"20px"}}>
+              <div style={{display:"flex",gap:"6px"}}>
+                {[0,1,2,3,4].map(i=>(
+                  <div key={i} style={{width:"4px",height:"28px",background:"#7c3aed",borderRadius:"4px",animation:"wave 1s ease-in-out infinite",animationDelay:`${i*.1}s`,opacity:.8}}/>
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* Right Panel */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{
-                fontSize: "10px", letterSpacing: "4px", textTransform: "uppercase",
-                color: "#6b5a3e", borderLeft: "2px solid #cd7f32", paddingLeft: "12px",
-              }}>
-                // OUTPUT — C# PLUGIN
+              <div style={{fontSize:"11px",letterSpacing:"3px",color:"rgba(255,255,255,0.25)",textTransform:"uppercase",fontWeight:"600"}}>
+                Анализ изображения...
               </div>
-              {code && (
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={copyCode} style={{
-                    background: "none", border: "1px solid #2a2218", color: copied ? "#cd7f32" : "#6b5a3e",
-                    padding: "4px 12px", fontSize: "9px", letterSpacing: "2px",
-                    cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase",
-                    transition: "all 0.2s",
-                  }}>
-                    {copied ? "✓ СКОПИРОВАНО" : "КОПИРОВАТЬ"}
-                  </button>
-                  <button onClick={downloadCode} style={{
-                    background: "linear-gradient(135deg, #8b4513, #cd7f32)",
-                    border: "none", color: "#fff",
-                    padding: "4px 12px", fontSize: "9px", letterSpacing: "2px",
-                    cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase",
-                  }}>
-                    ↓ .CS ФАЙЛ
-                  </button>
-                </div>
-              )}
             </div>
-
-            <div style={{
-              flex: 1,
-              background: "#050708",
-              border: "1px solid #1a1410",
-              borderRadius: "4px",
-              overflow: "auto",
-              minHeight: "400px",
-              position: "relative",
-            }}>
-              {!code && !loading && (
-                <div style={{
-                  position: "absolute", inset: 0,
-                  display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center",
-                  color: "#2a2218",
-                }}>
-                  <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.4 }}>{ }</div>
-                  <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase" }}>
-                    КОД ПОЯВИТСЯ ЗДЕСЬ
-                  </div>
-                  <div style={{ marginTop: "8px", fontSize: "10px", opacity: 0.5 }}>
-                    Загрузи скриншот → нажми генерацию
-                  </div>
-                </div>
-              )}
-
-              {loading && (
-                <div style={{
-                  position: "absolute", inset: 0,
-                  display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center",
-                  gap: "16px",
-                }}>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    {[0, 1, 2, 3, 4].map(i => (
-                      <div key={i} style={{
-                        width: "4px", height: "24px",
-                        background: "#cd7f32",
-                        borderRadius: "2px",
-                        animation: `wave 1s ease-in-out infinite`,
-                        animationDelay: `${i * 0.1}s`,
-                        opacity: 0.7,
-                      }} />
-                    ))}
-                  </div>
-                  <div style={{ fontSize: "10px", letterSpacing: "3px", color: "#6b5a3e", textTransform: "uppercase" }}>
-                    Анализ изображения...
-                  </div>
-                </div>
-              )}
-
-              {code && (
-                <pre style={{
-                  margin: 0,
-                  padding: "20px",
-                  fontSize: "12px",
-                  lineHeight: "1.7",
-                  color: "#c8b89a",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                  fontFamily: "'Courier New', monospace",
-                }}>
-                  {code.split("\n").map((line, i) => {
-                    let color = "#c8b89a";
-                    if (line.trim().startsWith("//")) color = "#5a6e4a";
-                    else if (/^\s*(using|namespace|class|public|private|protected|static|void|override|new|return|if|else|for|foreach|var|string|int|bool|float|List|Dictionary)\b/.test(line)) color = "#cd7f32";
-                    else if (/^\s*\[/.test(line)) color = "#7a9a6a";
-                    else if (line.includes('"')) color = "#8a9a6a";
-                    return (
-                      <span key={i} style={{ display: "block", color }}>
-                        <span style={{ color: "#2a2218", userSelect: "none", marginRight: "16px", fontSize: "10px" }}>
-                          {String(i + 1).padStart(3, " ")}
-                        </span>
-                        {line}
-                      </span>
-                    );
-                  })}
-                </pre>
-              )}
-            </div>
-
-            {code && (
-              <div style={{
-                padding: "10px 14px",
-                background: "rgba(205, 127, 50, 0.05)",
-                border: "1px solid #2a1e10",
-                fontSize: "10px", color: "#5a4a2e", letterSpacing: "1px",
-                display: "flex", gap: "20px",
-              }}>
-                <span>📄 {code.split("\n").length} строк</span>
-                <span>🔤 {code.length} символов</span>
-                <span style={{ marginLeft: "auto", color: "#4a7a3a" }}>✓ OXIDE/UMOD СОВМЕСТИМ</span>
-              </div>
-            )}
-          </div>
+          )}
+          {code&&(
+            <pre style={{margin:0,padding:"20px",fontSize:"12px",lineHeight:"1.75",color:"#c8b89a",whiteSpace:"pre-wrap",wordBreak:"break-word",fontFamily:"'Courier New',monospace"}}>
+              {code.split("\n").map((line,i)=>{
+                let c="#c8b89a";
+                if(line.trim().startsWith("//"))c="#6a8a5a";
+                else if(/^\s*(using|namespace|class|public|private|protected|static|void|override|new|return|if|else|for|foreach|var|string|int|bool|float|List|Dictionary)\b/.test(line))c="#a78bfa";
+                else if(/^\s*\[/.test(line))c="#7a9a6a";
+                else if(line.includes('"'))c="#7ab8a0";
+                return(
+                  <span key={i} style={{display:"block",color:c}}>
+                    <span style={{color:"rgba(255,255,255,0.1)",userSelect:"none",marginRight:"16px",fontSize:"10px"}}>{String(i+1).padStart(3," ")}</span>
+                    {line}
+                  </span>
+                );
+              })}
+            </pre>
+          )}
         </div>
 
-        <div style={{
-          marginTop: "24px", paddingTop: "16px",
-          borderTop: "1px solid #1a1410",
-          fontSize: "9px", letterSpacing: "3px", color: "#2a2218",
-          textTransform: "uppercase", textAlign: "center",
-        }}>
-          Powered by Claude Vision AI // Rust Plugin Generator v1.0 // Oxide · uMod · C#
-        </div>
+        {code&&(
+          <div style={{display:"flex",gap:"20px",padding:"10px 14px",background:"rgba(124,58,237,0.06)",border:"1px solid rgba(124,58,237,0.15)",borderRadius:"10px",fontSize:"11px",color:"rgba(255,255,255,0.3)",fontWeight:"500"}}>
+            <span>📄 {code.split("\n").length} строк</span>
+            <span>🔤 {code.length} символов</span>
+            <span style={{marginLeft:"auto",color:"#6a9a5a"}}>✓ Oxide/uMod совместим</span>
+          </div>
+        )}
       </div>
 
       <style>{`
-        @keyframes shimmer {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1.3)}}
+        ::-webkit-scrollbar{width:4px;height:4px}
+        ::-webkit-scrollbar-track{background:#0a0b0f}
+        ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(124,58,237,0.6)}
+        @media(max-width:768px){
+          div[style*="gridTemplateColumns: 1fr 1fr"]{grid-template-columns:1fr!important}
+          div[style*="borderRight"]{border-right:none!important;border-bottom:1px solid rgba(255,255,255,0.06)}
         }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        @keyframes wave {
-          0%, 100% { transform: scaleY(0.4); }
-          50% { transform: scaleY(1.2); }
-        }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #0a0c0f; }
-        ::-webkit-scrollbar-thumb { background: #2a2218; border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: #cd7f32; }
       `}</style>
     </div>
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("rust-bot-root"));
-root.render(<RustPluginGenerator />);
+ReactDOM.createRoot(document.getElementById("bot-root")).render(<Bot/>);
 </script>
-
 </body>
 </html>
+
