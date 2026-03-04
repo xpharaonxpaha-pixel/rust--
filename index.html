@@ -3,408 +3,1228 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RustForge AI — Генератор плагинов</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<title>NeuralMind — Искусственный Интеллект Нового Поколения</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:#030610;font-family:'Inter',sans-serif;color:#ddeeff}
+/* ══════════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════════ */
+:root {
+  --bg: #03050f;
+  --bg2: #060b1a;
+  --bg3: #0a1228;
+  --accent: #00e5ff;
+  --accent2: #7b5cfa;
+  --accent3: #ff4d8d;
+  --text: #e8f0ff;
+  --text2: rgba(232,240,255,0.55);
+  --text3: rgba(232,240,255,0.25);
+  --border: rgba(0,229,255,0.12);
+  --border2: rgba(0,229,255,0.25);
+  --card: rgba(6,11,26,0.8);
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 12px;
+  --glow: 0 0 40px rgba(0,229,255,0.2);
+  --glow2: 0 0 60px rgba(123,92,250,0.2);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: none;
+}
+::selection { background: rgba(0,229,255,0.3); color: #fff; }
 
-/* STARS */
-#cv{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* ══ CUSTOM CURSOR ══ */
+#cursor {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent); position: fixed; z-index: 9999;
+  pointer-events: none; transform: translate(-50%,-50%);
+  transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+  mix-blend-mode: screen;
+}
+#cursor-ring {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(0,229,255,0.5);
+  position: fixed; z-index: 9998; pointer-events: none;
+  transform: translate(-50%,-50%);
+  transition: transform 0.15s, width 0.3s, height 0.3s;
+}
+body:has(a:hover) #cursor, body:has(button:hover) #cursor { width: 24px; height: 24px; background: var(--accent2); }
 
-/* NEBULA */
-.neb{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 70% 50% at 10% 15%, rgba(100,50,230,.07) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 70% at 90% 80%, rgba(0,170,255,.05) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 40% at 55% 50%, rgba(240,90,20,.03) 0%, transparent 65%)
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 2px; }
+
+/* ══════════════════════════════════════════
+   CANVAS BACKGROUND
+══════════════════════════════════════════ */
+#neural-canvas {
+  position: fixed; inset: 0; z-index: 0; opacity: 0.35;
+  pointer-events: none;
 }
 
-/* KEY SCREEN */
-.keyscreen{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(3,6,16,.92);backdrop-filter:blur(8px)}
-.keycard{background:rgba(8,14,30,.95);border:1px solid rgba(0,180,255,.2);border-radius:20px;padding:36px 32px 28px;width:min(460px,92vw);box-shadow:0 0 80px rgba(0,170,255,.08)}
-.kc-logo{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.kc-icon{width:44px;height:44px;border-radius:50%;border:2px solid rgba(0,200,255,.45);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 18px rgba(0,200,255,.28);animation:glow 3s ease-in-out infinite}
-@keyframes glow{0%,100%{box-shadow:0 0 18px rgba(0,200,255,.28)}50%{box-shadow:0 0 36px rgba(0,200,255,.55)}}
-.kc-name{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;background:linear-gradient(120deg,#00ccff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.kc-sub{font-size:9.5px;color:rgba(100,160,220,.5);letter-spacing:.22em;text-transform:uppercase;margin-top:2px}
-.kc-title{font-family:'Orbitron',monospace;font-size:13px;color:#00ccff;letter-spacing:.12em;margin-bottom:8px}
-.kc-desc{font-size:12px;font-weight:300;color:rgba(150,190,230,.6);line-height:1.75;margin-bottom:20px}
-.kc-desc a{color:#00ccff;text-decoration:none}
-.kc-desc a:hover{text-decoration:underline}
-.kc-inp{width:100%;background:rgba(0,0,0,.45);border:1px solid rgba(0,180,255,.18);border-radius:10px;padding:12px 15px;font-family:'Inter',sans-serif;font-size:13px;color:#ddeeff;outline:none;transition:.2s;letter-spacing:.02em}
-.kc-inp:focus{border-color:rgba(0,180,255,.5);box-shadow:0 0 14px rgba(0,180,255,.08)}
-.kc-inp::placeholder{color:rgba(100,150,200,.35)}
-.kc-err{font-size:11px;color:#f87171;margin-top:8px;min-height:16px;text-align:center}
-.kc-btn{width:100%;margin-top:14px;padding:13px;border-radius:10px;background:linear-gradient(135deg,#00ccff,#7c3aed);border:none;color:#fff;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;cursor:pointer;transition:.2s;box-shadow:0 0 20px rgba(0,200,255,.2)}
-.kc-btn:hover{opacity:.88;box-shadow:0 0 30px rgba(0,200,255,.35)}
-.kc-note{margin-top:14px;font-size:10.5px;color:rgba(100,140,190,.5);text-align:center;line-height:1.6}
+/* ══════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 60px;
+  height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(3,5,15,0.95), rgba(3,5,15,0));
+  backdrop-filter: blur(0px);
+  transition: backdrop-filter 0.4s, background 0.4s;
+}
+nav.scrolled {
+  background: rgba(3,5,15,0.92);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; font-family: var(--font-display);
+  font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 2px;
+}
+.nav-logo-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.nav-logo span { color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 36px; }
+.nav-links a {
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  color: var(--text2); text-decoration: none; letter-spacing: 0.5px;
+  transition: color 0.3s; position: relative;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -4px; left: 0; right: 0; height: 1px;
+  background: var(--accent); transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
+}
+.nav-links a:hover::after { transform: scaleX(1); }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.btn-ghost {
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  color: var(--text2); background: transparent; border: none; cursor: pointer;
+  padding: 8px 20px; transition: color 0.3s; text-decoration: none;
+}
+.btn-ghost:hover { color: var(--text); }
+.btn-nav {
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  padding: 10px 24px; border-radius: 8px; cursor: pointer; border: none;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff; transition: all 0.3s; text-decoration: none; display: inline-block;
+  letter-spacing: 0.5px;
+}
+.btn-nav:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(123,92,250,0.4); }
 
-/* MAIN APP */
-.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;max-width:900px;margin:0 auto;padding:0 18px}
+/* ══════════════════════════════════════════
+   HERO SECTION
+══════════════════════════════════════════ */
+#hero {
+  min-height: 100vh; position: relative; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 100px 40px 60px;
+  overflow: hidden;
+}
+.hero-glow-1 {
+  position: absolute; width: 800px; height: 800px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(123,92,250,0.18) 0%, transparent 65%);
+  top: -200px; left: 50%; transform: translateX(-50%);
+  animation: heroGlow 8s ease-in-out infinite alternate;
+}
+.hero-glow-2 {
+  position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 65%);
+  bottom: 0; right: 10%; animation: heroGlow2 6s ease-in-out infinite alternate;
+}
+@keyframes heroGlow { from{transform:translateX(-50%) scale(1)} to{transform:translateX(-50%) scale(1.2)} }
+@keyframes heroGlow2 { from{opacity:0.6; transform:scale(1)} to{opacity:1; transform:scale(1.3)} }
 
-/* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 0 11px;border-bottom:1px solid rgba(0,180,255,.09);flex-shrink:0}
-.hlogo{display:flex;align-items:center;gap:11px}
-.hring{width:37px;height:37px;border-radius:50%;border:2px solid rgba(0,200,255,.42);display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 14px rgba(0,200,255,.22);animation:glow 3s ease-in-out infinite}
-.hname{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;letter-spacing:.08em;background:linear-gradient(120deg,#00ccff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.htag{font-size:9px;color:rgba(100,160,220,.5);letter-spacing:.2em;text-transform:uppercase;margin-top:2px}
-.hright{display:flex;align-items:center;gap:10px}
-.hbtn{background:none;border:1px solid rgba(0,180,255,.14);border-radius:7px;padding:5px 11px;color:rgba(100,160,215,.55);font-size:10px;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.08em;transition:.15s}
-.hbtn:hover{border-color:rgba(0,180,255,.38);color:#00ccff}
-.online{display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(100,200,130,.8);letter-spacing:.1em}
-.online i{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;display:block;animation:bl 2s ease-in-out infinite}
-@keyframes bl{0%,100%{opacity:1}50%{opacity:.25}}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(123,92,250,0.1); border: 1px solid rgba(123,92,250,0.3);
+  border-radius: 100px; padding: 7px 18px; margin-bottom: 36px;
+  font-size: 12px; font-weight: 500; color: rgba(180,160,255,0.9); letter-spacing: 1px;
+  animation: fadeUp 0.8s ease both;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #7b5cfa;
+  box-shadow: 0 0 8px #7b5cfa; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
 
-/* MESSAGES */
-.msgs{flex:1;overflow-y:auto;padding:18px 0 8px;display:flex;flex-direction:column;gap:14px;min-height:0}
-.msgs::-webkit-scrollbar{width:3px}
-.msgs::-webkit-scrollbar-thumb{background:rgba(0,200,255,.14);border-radius:2px}
+.hero-title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(44px, 7.5vw, 108px);
+  line-height: 0.92; letter-spacing: -1px; margin-bottom: 24px; position: relative;
+  animation: fadeUp 0.8s 0.1s ease both;
+}
+.hero-title-line1 { display: block; color: var(--text); }
+.hero-title-line2 {
+  display: block;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: fadeUp 0.8s 0.1s ease both, gradFlow 5s linear infinite;
+  filter: drop-shadow(0 0 30px rgba(0,229,255,0.3));
+}
+@keyframes gradFlow { to { background-position: 200% center; } }
 
-/* WELCOME */
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;gap:16px;animation:fi .8s ease}
-@keyframes fi{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.worb{width:86px;height:86px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(0,200,255,.55),rgba(120,50,240,.4),transparent 70%);box-shadow:0 0 45px rgba(0,200,255,.22),0 0 90px rgba(120,50,240,.12);display:flex;align-items:center;justify-content:center;font-size:38px;animation:ob 4s ease-in-out infinite}
-@keyframes ob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-.wtitle{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;background:linear-gradient(120deg,#00ccff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.wdesc{font-size:13px;font-weight:300;color:rgba(155,200,240,.6);max-width:420px;line-height:1.82}
-.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:4px}
-.chip{background:rgba(0,180,255,.04);border:1px solid rgba(0,180,255,.13);border-radius:20px;padding:6px 14px;font-size:11px;color:rgba(145,200,248,.62);cursor:pointer;transition:.15s;letter-spacing:.03em}
-.chip:hover{background:rgba(0,180,255,.11);border-color:rgba(0,180,255,.36);color:#ddeeff}
+.hero-sub {
+  font-size: 18px; font-weight: 400; color: var(--text2); line-height: 1.75;
+  max-width: 580px; margin: 0 auto 52px;
+  animation: fadeUp 0.8s 0.25s ease both;
+}
+.hero-btns {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 70px;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+.btn-primary {
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  padding: 16px 44px; border-radius: 10px; cursor: pointer; border: none;
+  background: linear-gradient(135deg, #5538c8, #00a8cc);
+  color: #fff; transition: all 0.35s; text-decoration: none; display: inline-block;
+  box-shadow: 0 0 40px rgba(85,56,200,0.35);
+  letter-spacing: 0.5px; position: relative; overflow: hidden;
+}
+.btn-primary::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #7b5cfa, #00e5ff);
+  opacity: 0; transition: opacity 0.35s;
+}
+.btn-primary:hover::before { opacity: 1; }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(85,56,200,0.5); }
+.btn-primary span { position: relative; z-index: 1; }
+.btn-outline {
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  padding: 15px 44px; border-radius: 10px; cursor: pointer;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text); transition: all 0.35s; text-decoration: none; display: inline-block;
+  letter-spacing: 0.5px; backdrop-filter: blur(10px);
+}
+.btn-outline:hover { background: rgba(255,255,255,0.08); border-color: rgba(0,229,255,0.4); color: var(--accent); transform: translateY(-2px); }
 
-/* ROWS */
-.row{display:flex;gap:10px;animation:fi .3s ease}
-.row.user{flex-direction:row-reverse}
-.av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid rgba(0,180,255,.18)}
-.row.ai .av{background:rgba(0,180,255,.07);box-shadow:0 0 10px rgba(0,180,255,.1)}
-.row.user .av{background:rgba(120,50,240,.1);border-color:rgba(120,50,240,.26)}
-.bub{max-width:82%;padding:11px 15px;font-size:13px;font-weight:300;line-height:1.76;word-break:break-word}
-.row.ai .bub{background:rgba(7,13,30,.9);border:1px solid rgba(0,180,255,.1);border-radius:4px 12px 12px 12px;color:#d4eaff}
-.row.user .bub{background:rgba(90,35,195,.1);border:1px solid rgba(120,50,240,.21);border-radius:12px 4px 12px 12px;color:#ddeeff}
-.bub img.prev{max-width:200px;border-radius:8px;border:1px solid rgba(0,180,255,.16);margin-bottom:8px;display:block}
-.code-top{display:flex;align-items:center;justify-content:space-between;background:rgba(249,115,22,.065);border:1px solid rgba(249,115,22,.17);border-bottom:none;border-radius:8px 8px 0 0;padding:6px 14px;font-size:9px;font-family:'Orbitron',monospace;letter-spacing:.16em;color:#f97316;margin-top:10px}
-.bub pre{background:rgba(0,0,0,.55);border:1px solid rgba(249,115,22,.17);border-top:none;border-radius:0 0 8px 8px;padding:13px;overflow-x:auto;font-family:'Courier New',monospace;font-size:11.5px;color:#fbbf24;line-height:1.64;margin:0}
-.bub pre code{background:none;padding:0;color:inherit}
-.bub code{background:rgba(249,115,22,.08);color:#fb923c;padding:1px 5px;border-radius:3px;font-size:12px;font-family:'Courier New',monospace}
-.cpbtn{background:none;border:1px solid rgba(249,115,22,.26);border-radius:4px;padding:2px 9px;color:#f97316;font-size:9px;cursor:pointer;transition:.15s;font-family:'Inter',sans-serif}
-.cpbtn:hover{background:rgba(249,115,22,.1)}
-.bub strong{color:#ddeeff;font-weight:500}
-.bub em{color:rgba(155,210,255,.72);font-style:italic}
+.hero-stats {
+  display: flex; gap: 0; animation: fadeUp 0.8s 0.55s ease both;
+  border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  background: rgba(6,11,26,0.7); backdrop-filter: blur(20px);
+}
+.hero-stat {
+  padding: 22px 44px; display: flex; flex-direction: column; gap: 5px; align-items: center;
+  border-right: 1px solid var(--border); transition: background 0.3s;
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat:hover { background: rgba(0,229,255,0.05); }
+.hero-stat-num {
+  font-family: var(--font-display); font-size: 26px; font-weight: 700;
+  color: var(--accent); text-shadow: 0 0 20px rgba(0,229,255,0.4);
+}
+.hero-stat-label { font-size: 11px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; }
 
-/* TYPING */
-.trow{display:flex;gap:10px}
-.tbub{background:rgba(7,13,30,.9);border:1px solid rgba(0,180,255,.1);border-radius:4px 12px 12px 12px;padding:14px 19px;display:flex;gap:5px;align-items:center}
-.td{width:6px;height:6px;border-radius:50%;background:#00ccff;animation:tda 1.2s infinite ease-in-out}
-.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
-@keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.2}30%{transform:translateY(-5px);opacity:1}}
+/* scroll hint */
+.scroll-hint {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--text3); font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  animation: fadeUp 1s 1s ease both;
+}
+.scroll-line {
+  width: 1px; height: 40px; background: linear-gradient(to bottom, var(--text3), transparent);
+  animation: scrollAnim 2s ease-in-out infinite;
+}
+@keyframes scrollAnim { 0%,100%{transform:scaleY(1);opacity:1} 50%{transform:scaleY(0.5);opacity:0.3} }
 
-/* INPUT */
-.izone{padding-top:10px;padding-bottom:14px;flex-shrink:0}
-.istrip{display:none;gap:7px;margin-bottom:9px;flex-wrap:wrap}
-.istrip.show{display:flex}
-.thumb{position:relative;width:58px;height:58px;border-radius:8px;overflow:hidden;border:1px solid rgba(0,180,255,.28)}
-.thumb img{width:100%;height:100%;object-fit:cover}
-.thdel{position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.82);border:none;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.thdel:hover{background:rgba(220,40,40,.88)}
-.irow{display:flex;gap:9px;align-items:flex-end;background:rgba(5,10,22,.92);border:1px solid rgba(0,180,255,.11);border-radius:14px;padding:9px 12px;backdrop-filter:blur(18px);transition:.2s}
-.irow:focus-within{border-color:rgba(0,180,255,.34);box-shadow:0 0 22px rgba(0,180,255,.06)}
-.att{width:34px;height:34px;border-radius:8px;background:none;border:1px solid rgba(0,180,255,.13);color:rgba(105,160,210,.52);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
-.att:hover{border-color:rgba(0,180,255,.36);color:#00ccff;background:rgba(0,180,255,.07)}
-#fi{display:none}
-#ti{flex:1;background:none;border:none;outline:none;resize:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;color:#ddeeff;line-height:1.64;max-height:110px;min-height:34px;padding:5px 0;caret-color:#00ccff;overflow-y:auto}
-#ti::placeholder{color:rgba(85,135,190,.36)}
-#ti::-webkit-scrollbar{width:2px}
-#ti::-webkit-scrollbar-thumb{background:rgba(0,180,255,.16)}
-.sbtn{width:39px;height:39px;border-radius:10px;background:linear-gradient(135deg,#00ccff,#7c3aed);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;box-shadow:0 0 18px rgba(0,200,255,.2)}
-.sbtn:hover{transform:scale(1.06);box-shadow:0 0 30px rgba(0,200,255,.42)}
-.sbtn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
-.sbtn svg{width:17px;height:17px;fill:#fff}
-.hint{text-align:center;font-size:10px;color:rgba(65,110,160,.42);margin-top:7px;letter-spacing:.07em}
+/* ══════════════════════════════════════════
+   SECTION COMMON
+══════════════════════════════════════════ */
+section { position: relative; z-index: 10; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 40px; }
+.section-header { text-align: center; margin-bottom: 64px; }
+.section-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 16px;
+}
+.section-tag::before, .section-tag::after {
+  content: ''; display: block; width: 24px; height: 1px; background: var(--accent); opacity: 0.5;
+}
+.section-title {
+  font-family: var(--font-display); font-size: clamp(28px, 3.5vw, 46px);
+  font-weight: 700; color: var(--text); line-height: 1.15; margin-bottom: 16px;
+}
+.section-desc { font-size: 16px; color: var(--text2); line-height: 1.75; max-width: 520px; margin: 0 auto; }
+
+/* ══════════════════════════════════════════
+   FEATURES
+══════════════════════════════════════════ */
+#features { padding: 120px 0; }
+.feat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+}
+.feat-card {
+  background: var(--card); backdrop-filter: blur(30px);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 36px 32px; transition: all 0.4s; position: relative; overflow: hidden;
+}
+.feat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: scaleX(0); transition: transform 0.4s;
+}
+.feat-card:hover { transform: translateY(-8px); border-color: var(--border2); box-shadow: var(--glow); }
+.feat-card:hover::before { transform: scaleX(1); }
+.feat-card.purple:hover { box-shadow: var(--glow2); border-color: rgba(123,92,250,0.35); }
+.feat-card.purple::before { background: linear-gradient(90deg, transparent, var(--accent2), transparent); }
+.feat-card.pink:hover { box-shadow: 0 0 40px rgba(255,77,141,0.2); border-color: rgba(255,77,141,0.35); }
+.feat-card.pink::before { background: linear-gradient(90deg, transparent, var(--accent3), transparent); }
+.feat-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px; margin-bottom: 22px;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  background: rgba(0,229,255,0.1);
+}
+.feat-card.purple .feat-icon-wrap { background: rgba(123,92,250,0.12); }
+.feat-card.pink .feat-icon-wrap { background: rgba(255,77,141,0.1); }
+.feat-title-sm { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px; letter-spacing: 0.5px; }
+.feat-desc-sm { font-size: 14px; color: var(--text2); line-height: 1.75; }
+.feat-tag {
+  display: inline-block; margin-top: 20px; padding: 4px 12px; border-radius: 100px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  background: rgba(0,229,255,0.08); color: var(--accent); border: 1px solid rgba(0,229,255,0.15);
+}
+.feat-card.purple .feat-tag { background: rgba(123,92,250,0.1); color: #a990ff; border-color: rgba(123,92,250,0.2); }
+.feat-card.pink .feat-tag { background: rgba(255,77,141,0.08); color: #ff7eb3; border-color: rgba(255,77,141,0.15); }
+
+/* ══════════════════════════════════════════
+   DEMO / CHAT SECTION
+══════════════════════════════════════════ */
+#demo {
+  padding: 120px 0;
+  background: linear-gradient(180deg, transparent, rgba(6,11,26,0.6) 30%, rgba(6,11,26,0.6) 70%, transparent);
+}
+.demo-wrap {
+  display: grid; grid-template-columns: 1fr 1.1fr; gap: 60px; align-items: center;
+}
+.demo-left {}
+.demo-left .section-tag { justify-content: flex-start; }
+.demo-left .section-title { text-align: left; }
+.demo-left .section-desc { text-align: left; margin: 0 0 32px; }
+.demo-features { display: flex; flex-direction: column; gap: 16px; }
+.demo-feat {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 14px; color: var(--text2);
+}
+.demo-feat-icon {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  background: rgba(0,229,255,0.05);
+}
+
+/* CHAT WIDGET */
+.chat-widget {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 24px;
+  overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.5), var(--glow2);
+  display: flex; flex-direction: column; height: 580px;
+}
+.chat-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(10,18,40,0.8);
+}
+.chat-avatar {
+  width: 38px; height: 38px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.chat-header-info { flex: 1; }
+.chat-header-name { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 1px; }
+.chat-header-status { font-size: 11px; color: #4ade80; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.chat-header-status::before { content: '●'; font-size: 7px; animation: pulse 2s infinite; }
+.chat-header-actions { display: flex; gap: 8px; }
+.chat-btn-sm {
+  width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; color: var(--text3); font-size: 13px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.chat-btn-sm:hover { border-color: var(--border2); color: var(--accent); background: rgba(0,229,255,0.05); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 3px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.msg { display: flex; gap: 10px; animation: msgIn 0.3s ease; }
+@keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.msg.user { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.msg.ai .msg-avatar { background: linear-gradient(135deg, var(--accent2), var(--accent)); }
+.msg.user .msg-avatar { background: rgba(255,255,255,0.1); }
+.msg-bubble {
+  max-width: 80%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.65;
+}
+.msg.ai .msg-bubble {
+  background: rgba(10,18,40,0.9); border: 1px solid var(--border);
+  color: var(--text); border-radius: 4px 14px 14px 14px;
+}
+.msg.user .msg-bubble {
+  background: linear-gradient(135deg, rgba(85,56,200,0.6), rgba(0,150,180,0.4));
+  border: 1px solid rgba(123,92,250,0.3); color: var(--text);
+  border-radius: 14px 4px 14px 14px;
+}
+.msg-time { font-size: 10px; color: var(--text3); margin-top: 4px; text-align: right; }
+.msg.ai .msg-time { text-align: left; }
+.typing {
+  display: flex; align-items: center; gap: 4px; padding: 14px 18px;
+  background: rgba(10,18,40,0.9); border: 1px solid var(--border);
+  border-radius: 4px 14px 14px 14px; width: fit-content;
+}
+.typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.6;
+  animation: typingDot 1.4s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-6px);opacity:1} }
+
+.chat-quick { padding: 12px 20px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border); background: rgba(10,18,40,0.5); }
+.quick-btn {
+  font-size: 11px; padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--border); background: transparent; cursor: pointer;
+  color: var(--text2); transition: all 0.2s; font-family: var(--font-body);
+  white-space: nowrap;
+}
+.quick-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+
+.chat-input-area {
+  padding: 16px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: flex-end;
+  background: var(--bg2);
+}
+.chat-input {
+  flex: 1; background: rgba(3,5,15,0.8); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px; color: var(--text); font-family: var(--font-body);
+  font-size: 14px; resize: none; outline: none; transition: border-color 0.3s;
+  max-height: 120px; line-height: 1.5;
+}
+.chat-input:focus { border-color: var(--border2); }
+.chat-input::placeholder { color: var(--text3); }
+.send-btn {
+  width: 44px; height: 44px; border-radius: 12px; border: none; cursor: pointer; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+.send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(123,92,250,0.4); }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ══════════════════════════════════════════
+   HOW IT WORKS
+══════════════════════════════════════════ */
+#how { padding: 120px 0; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+.steps::before {
+  content: ''; position: absolute; top: 38px; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+}
+.step { padding: 0 20px; text-align: center; }
+.step-num {
+  width: 76px; height: 76px; border-radius: 50%; border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+  font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--accent);
+  background: var(--bg3); transition: all 0.4s; position: relative; z-index: 2;
+}
+.step:hover .step-num { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff; border-color: transparent; box-shadow: var(--glow); }
+.step-title { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; letter-spacing: 0.5px; }
+.step-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+/* ══════════════════════════════════════════
+   PRICING
+══════════════════════════════════════════ */
+#pricing { padding: 120px 0; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.price-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+  padding: 40px 36px; transition: all 0.4s; position: relative; overflow: hidden;
+}
+.price-card:hover { transform: translateY(-6px); }
+.price-card.featured {
+  background: linear-gradient(160deg, rgba(85,56,200,0.15), rgba(0,100,140,0.12));
+  border-color: rgba(123,92,250,0.4);
+  box-shadow: var(--glow2);
+}
+.price-card.featured::before {
+  content: 'Популярный'; position: absolute; top: 20px; right: -28px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff; font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+  padding: 5px 40px; transform: rotate(45deg); text-transform: uppercase;
+}
+.price-name { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--accent2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+.price-card.featured .price-name { color: var(--accent); }
+.price-amount { margin-bottom: 8px; display: flex; align-items: baseline; gap: 4px; }
+.price-num { font-family: var(--font-display); font-size: 48px; font-weight: 900; color: var(--text); }
+.price-period { font-size: 14px; color: var(--text2); }
+.price-sub { font-size: 12px; color: var(--text3); margin-bottom: 32px; }
+.price-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+.price-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+.price-feat {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; color: var(--text2);
+}
+.price-feat::before { content: '✓'; color: var(--accent); font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.price-feat.disabled { color: var(--text3); }
+.price-feat.disabled::before { content: '✕'; color: var(--text3); }
+.price-btn {
+  width: 100%; padding: 14px; border-radius: 10px; font-family: var(--font-body);
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+  letter-spacing: 0.5px;
+}
+.price-btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.price-btn-outline:hover { border-color: var(--border2); color: var(--text); }
+.price-btn-full { background: linear-gradient(135deg, var(--accent2), var(--accent)); border: none; color: #fff; box-shadow: 0 8px 30px rgba(123,92,250,0.3); }
+.price-btn-full:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123,92,250,0.5); }
+
+/* ══════════════════════════════════════════
+   TESTIMONIALS
+══════════════════════════════════════════ */
+#reviews { padding: 120px 0; }
+.reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.review-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+  padding: 32px; transition: all 0.4s;
+}
+.review-card:hover { border-color: var(--border2); transform: translateY(-4px); }
+.review-stars { color: #fbbf24; font-size: 14px; margin-bottom: 16px; letter-spacing: 2px; }
+.review-text { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 24px; font-style: italic; }
+.review-author { display: flex; align-items: center; gap: 12px; }
+.review-ava {
+  width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center;
+  justify-content: center; font-size: 20px; background: rgba(255,255,255,0.05);
+}
+.review-name { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: 0.5px; }
+.review-role { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ══════════════════════════════════════════
+   CTA BANNER
+══════════════════════════════════════════ */
+#cta { padding: 120px 0; }
+.cta-box {
+  background: linear-gradient(135deg, rgba(85,56,200,0.2), rgba(0,150,200,0.12));
+  border: 1px solid rgba(123,92,250,0.25); border-radius: 32px;
+  padding: 80px 60px; text-align: center; position: relative; overflow: hidden;
+}
+.cta-box::before {
+  content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(123,92,250,0.15), transparent 60%);
+}
+.cta-title {
+  font-family: var(--font-display); font-size: clamp(28px, 4vw, 52px);
+  font-weight: 900; color: var(--text); margin-bottom: 16px; position: relative;
+}
+.cta-title span { color: var(--accent); text-shadow: 0 0 30px rgba(0,229,255,0.4); }
+.cta-sub { font-size: 16px; color: var(--text2); max-width: 480px; margin: 0 auto 44px; line-height: 1.75; position: relative; }
+.cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; }
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border); padding: 60px 0 40px;
+  position: relative; z-index: 10;
+}
+.footer-inner {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; margin-bottom: 60px;
+}
+.footer-brand {}
+.footer-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; font-family: var(--font-display); font-size: 16px;
+  font-weight: 700; color: var(--text); letter-spacing: 2px; margin-bottom: 16px;
+}
+.footer-logo span { color: var(--accent); }
+.footer-logo-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.footer-tagline { font-size: 14px; color: var(--text2); line-height: 1.7; max-width: 260px; margin-bottom: 24px; }
+.footer-socials { display: flex; gap: 10px; }
+.social-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+  color: var(--text2); transition: all 0.3s; cursor: pointer; background: transparent;
+  text-decoration: none;
+}
+.social-btn:hover { border-color: var(--border2); color: var(--accent); background: rgba(0,229,255,0.05); }
+.footer-col-title { font-family: var(--font-display); font-size: 11px; font-weight: 600; color: var(--text); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+.footer-links { display: flex; flex-direction: column; gap: 11px; }
+.footer-links a { font-size: 14px; color: var(--text2); text-decoration: none; transition: color 0.3s; }
+.footer-links a:hover { color: var(--accent); }
+.footer-bottom {
+  border-top: 1px solid var(--border); padding-top: 28px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.footer-copy { font-size: 13px; color: var(--text3); }
+.footer-legal { display: flex; gap: 24px; }
+.footer-legal a { font-size: 13px; color: var(--text3); text-decoration: none; transition: color 0.3s; }
+.footer-legal a:hover { color: var(--text2); }
+
+/* ══ ANIMATIONS ══ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 960px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .hero-stats { flex-wrap: wrap; }
+  .hero-stat { padding: 16px 24px; }
+  .feat-grid { grid-template-columns: 1fr 1fr; }
+  .demo-wrap { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  .steps::before { display: none; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .reviews-grid { grid-template-columns: 1fr 1fr; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .reviews-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .cta-box { padding: 50px 24px; }
+  .hero-stats { display: none; }
+  .footer-inner { grid-template-columns: 1fr; gap: 36px; }
+}
 </style>
 </head>
 <body>
-<canvas id="cv"></canvas>
-<div class="neb"></div>
 
-<!-- KEY SCREEN -->
-<div class="keyscreen" id="ks">
-  <div class="keycard">
-    <div class="kc-logo">
-      <div class="kc-icon">⚙️</div>
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NEURAL CANVAS BG -->
+<canvas id="neural-canvas"></canvas>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">🧠</div>
+    NEURAL<span>MIND</span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Возможности</a>
+    <a href="#demo">Демо</a>
+    <a href="#how">Как работает</a>
+    <a href="#pricing">Цены</a>
+    <a href="#reviews">Отзывы</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost">Войти</a>
+    <a href="#demo" class="btn-nav">Попробовать</a>
+  </div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section id="hero">
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Новая модель NeuralMind 4.0 — уже доступна
+  </div>
+
+  <h1 class="hero-title">
+    <span class="hero-title-line1">Интеллект</span>
+    <span class="hero-title-line2">Будущего</span>
+  </h1>
+
+  <p class="hero-sub">
+    Нейросеть нового поколения для решения любых задач.
+    Анализируй данные, создавай контент, автоматизируй процессы — за секунды.
+  </p>
+
+  <div class="hero-btns">
+    <a href="#demo" class="btn-primary"><span>Начать бесплатно →</span></a>
+    <a href="#how" class="btn-outline">Как это работает</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-num">200B+</span>
+      <span class="hero-stat-label">Параметров</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">1.2ms</span>
+      <span class="hero-stat-label">Отклик</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">150+</span>
+      <span class="hero-stat-label">Языков</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">2M+</span>
+      <span class="hero-stat-label">Пользователей</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Прокрутить</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section id="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Возможности</div>
+      <h2 class="section-title">Всё, что нужно для работы</h2>
+      <p class="section-desc">Мощные инструменты ИИ в одном месте — от анализа данных до генерации контента</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon-wrap">🔮</div>
+        <div class="feat-title-sm">Предиктивный анализ</div>
+        <div class="feat-desc-sm">Прогнозирует результаты с точностью 99.8%. Обрабатывает миллионы данных за миллисекунды.</div>
+        <div class="feat-tag">AI-POWERED</div>
+      </div>
+      <div class="feat-card purple reveal" style="transition-delay:0.1s">
+        <div class="feat-icon-wrap">✍️</div>
+        <div class="feat-title-sm">Генерация контента</div>
+        <div class="feat-desc-sm">Тексты, статьи, код, рекламные материалы — любой контент за секунды на 150+ языках.</div>
+        <div class="feat-tag">MULTIMODAL</div>
+      </div>
+      <div class="feat-card pink reveal" style="transition-delay:0.2s">
+        <div class="feat-icon-wrap">🤖</div>
+        <div class="feat-title-sm">Автономные агенты</div>
+        <div class="feat-desc-sm">Самостоятельно выполняет сложные задачи: исследование, анализ, отчёты — без участия человека.</div>
+        <div class="feat-tag">AUTONOMOUS</div>
+      </div>
+      <div class="feat-card purple reveal" style="transition-delay:0.1s">
+        <div class="feat-icon-wrap">🌐</div>
+        <div class="feat-title-sm">Мультимодальность</div>
+        <div class="feat-desc-sm">Понимает текст, изображения, аудио, видео и документы в едином контексте разговора.</div>
+        <div class="feat-tag">VISION</div>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:0.2s">
+        <div class="feat-icon-wrap">⚡</div>
+        <div class="feat-title-sm">API интеграция</div>
+        <div class="feat-desc-sm">REST API с поддержкой WebSocket. SDK для Python, JavaScript, Go, Rust и других языков.</div>
+        <div class="feat-tag">DEVELOPER</div>
+      </div>
+      <div class="feat-card pink reveal" style="transition-delay:0.3s">
+        <div class="feat-icon-wrap">🛡️</div>
+        <div class="feat-title-sm">Enterprise безопасность</div>
+        <div class="feat-desc-sm">Шифрование AES-256, SOC 2 Type II, GDPR. Ваши данные остаются только у вас.</div>
+        <div class="feat-tag">ENTERPRISE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DEMO / CHAT ══════════ -->
+<section id="demo">
+  <div class="container">
+    <div class="demo-wrap">
+      <div class="demo-left reveal">
+        <div class="section-tag">Живое демо</div>
+        <h2 class="section-title">Поговори с<br>нейросетью прямо сейчас</h2>
+        <p class="section-desc">Задай любой вопрос — от написания кода до анализа стратегии. Реальный ИИ, реальные ответы.</p>
+        <div class="demo-features">
+          <div class="demo-feat"><div class="demo-feat-icon">💡</div>Понимает контекст многоходовых диалогов</div>
+          <div class="demo-feat"><div class="demo-feat-icon">⚡</div>Ответ за менее чем 2 секунды</div>
+          <div class="demo-feat"><div class="demo-feat-icon">🌍</div>Общается на русском и 150+ языках</div>
+          <div class="demo-feat"><div class="demo-feat-icon">🔒</div>Диалог не сохраняется на серверах</div>
+        </div>
+      </div>
+
+      <!-- CHAT WIDGET -->
+      <div class="chat-widget reveal" style="transition-delay:0.15s">
+        <div class="chat-header">
+          <div class="chat-avatar">🧠</div>
+          <div class="chat-header-info">
+            <div class="chat-header-name">NEURALMIND AI</div>
+            <div class="chat-header-status">Онлайн · готов к работе</div>
+          </div>
+          <div class="chat-header-actions">
+            <button class="chat-btn-sm" title="Очистить" onclick="clearChat()">🗑</button>
+            <button class="chat-btn-sm" title="Копировать">📋</button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg ai">
+            <div class="msg-avatar">🧠</div>
+            <div>
+              <div class="msg-bubble">Привет! Я NeuralMind — ИИ нового поколения. Могу помочь с анализом, написанием текстов, кодом, ответами на вопросы и многим другим. Что вас интересует? 🚀</div>
+              <div class="msg-time">сейчас</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-quick" id="quick-btns">
+          <button class="quick-btn" onclick="sendQuick('Напиши краткое описание для стартапа по ИИ')">💡 Идея стартапа</button>
+          <button class="quick-btn" onclick="sendQuick('Объясни как работает нейросеть простыми словами')">🧠 Как ты работаешь?</button>
+          <button class="quick-btn" onclick="sendQuick('Напиши функцию на Python для сортировки списка')">💻 Код на Python</button>
+          <button class="quick-btn" onclick="sendQuick('Какие тренды в AI в 2025 году?')">📈 AI тренды 2025</button>
+        </div>
+
+        <div class="chat-input-area">
+          <textarea
+            class="chat-input" id="chat-input"
+            placeholder="Напишите сообщение..."
+            rows="1"
+            onkeydown="handleKey(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section id="how">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Как работает</div>
+      <h2 class="section-title">Четыре шага до результата</h2>
+      <p class="section-desc">Простой процесс от запроса до готового решения</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-title">Создай аккаунт</div>
+        <div class="step-desc">Регистрация за 30 секунд. Никаких карт для пробного периода.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.1s">
+        <div class="step-num">02</div>
+        <div class="step-title">Задай вопрос</div>
+        <div class="step-desc">Пиши на естественном языке — система поймёт любой запрос.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.2s">
+        <div class="step-num">03</div>
+        <div class="step-title">Получи ответ</div>
+        <div class="step-desc">Детальный, структурированный ответ за секунды. Уточняй и итерируй.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.3s">
+        <div class="step-num">04</div>
+        <div class="step-title">Автоматизируй</div>
+        <div class="step-desc">Подключи API и встрой нейросеть прямо в свои продукты и процессы.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PRICING ══════════ -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Тарифы</div>
+      <h2 class="section-title">Честные цены без скрытых платежей</h2>
+      <p class="section-desc">Начни бесплатно, масштабируй по мере роста</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="price-card reveal">
+        <div class="price-name">Бесплатно</div>
+        <div class="price-amount">
+          <span class="price-num">$0</span>
+          <span class="price-period">/ мес</span>
+        </div>
+        <div class="price-sub">Навсегда бесплатно</div>
+        <div class="price-divider"></div>
+        <div class="price-features">
+          <div class="price-feat">50 запросов в день</div>
+          <div class="price-feat">GPT-4 класс модель</div>
+          <div class="price-feat">Текст и код</div>
+          <div class="price-feat">Веб интерфейс</div>
+          <div class="price-feat disabled">API доступ</div>
+          <div class="price-feat disabled">Приоритетная обработка</div>
+        </div>
+        <button class="price-btn price-btn-outline">Начать бесплатно</button>
+      </div>
+      <!-- PRO -->
+      <div class="price-card featured reveal" style="transition-delay:0.15s">
+        <div class="price-name">Pro</div>
+        <div class="price-amount">
+          <span class="price-num">$29</span>
+          <span class="price-period">/ мес</span>
+        </div>
+        <div class="price-sub">Биллинг ежемесячно</div>
+        <div class="price-divider"></div>
+        <div class="price-features">
+          <div class="price-feat">Безлимитные запросы</div>
+          <div class="price-feat">NeuralMind 4.0 (лучшая)</div>
+          <div class="price-feat">Текст, код, изображения</div>
+          <div class="price-feat">API: 500k токенов/мес</div>
+          <div class="price-feat">Приоритетная обработка</div>
+          <div class="price-feat">История диалогов</div>
+        </div>
+        <button class="price-btn price-btn-full">Начать Pro →</button>
+      </div>
+      <!-- ENTERPRISE -->
+      <div class="price-card reveal" style="transition-delay:0.3s">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount">
+          <span class="price-num">Custom</span>
+        </div>
+        <div class="price-sub">Индивидуальные условия</div>
+        <div class="price-divider"></div>
+        <div class="price-features">
+          <div class="price-feat">Безлимитный API</div>
+          <div class="price-feat">Fine-tuning под ваши данные</div>
+          <div class="price-feat">Деплой на вашем сервере</div>
+          <div class="price-feat">SLA 99.99% uptime</div>
+          <div class="price-feat">Выделенный менеджер</div>
+          <div class="price-feat">SOC 2 / GDPR договор</div>
+        </div>
+        <button class="price-btn price-btn-outline">Связаться с нами</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ REVIEWS ══════════ -->
+<section id="reviews">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Отзывы</div>
+      <h2 class="section-title">2 миллиона доверяют NeuralMind</h2>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">"NeuralMind изменил нашу работу с контентом. Раньше копирайтер тратил день на статью — теперь 20 минут. Качество выше."</div>
+        <div class="review-author">
+          <div class="review-ava">👩‍💼</div>
+          <div><div class="review-name">АННА КОЗЛОВА</div><div class="review-role">CMO, TechStart</div></div>
+        </div>
+      </div>
+      <div class="review-card reveal" style="transition-delay:0.1s">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">"API интеграция заняла 2 часа. Документация отличная. Скорость ответов впечатляет — наш сервис стал значительно быстрее."</div>
+        <div class="review-author">
+          <div class="review-ava">👨‍💻</div>
+          <div><div class="review-name">ДМИТРИЙ ВОЛКОВ</div><div class="review-role">Lead Engineer, Nexus</div></div>
+        </div>
+      </div>
+      <div class="review-card reveal" style="transition-delay:0.2s">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">"Использую для анализа данных клиентов. Находит паттерны, которые раньше занимали неделю работы аналитика. Магия."</div>
+        <div class="review-author">
+          <div class="review-ava">👨‍🔬</div>
+          <div><div class="review-name">ИГОРЬ СОКОЛОВ</div><div class="review-role">Data Science Director</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CTA ══════════ -->
+<section id="cta">
+  <div class="container">
+    <div class="cta-box reveal">
+      <h2 class="cta-title">Готов начать?<br><span>Это бесплатно.</span></h2>
+      <p class="cta-sub">Присоединяйся к 2 миллионам пользователей, которые уже работают умнее с NeuralMind.</p>
+      <div class="cta-btns">
+        <a href="#demo" class="btn-primary"><span>Попробовать бесплатно →</span></a>
+        <a href="#" class="btn-outline">Документация</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="footer-logo">
+          <div class="footer-logo-icon">🧠</div>
+          NEURAL<span>MIND</span>
+        </a>
+        <div class="footer-tagline">Нейросеть нового поколения для решения задач любой сложности.</div>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">gh</a>
+          <a href="#" class="social-btn">tg</a>
+        </div>
+      </div>
       <div>
-        <div class="kc-name">RUSTFORGE AI</div>
-        <div class="kc-sub">Rust Plugin Generator</div>
+        <div class="footer-col-title">Продукт</div>
+        <div class="footer-links">
+          <a href="#">Возможности</a>
+          <a href="#">API</a>
+          <a href="#">Документация</a>
+          <a href="#">Changelog</a>
+          <a href="#">Status</a>
+        </div>
       </div>
-    </div>
-    <div class="kc-title">🔑 ВВЕДИ API КЛЮЧ</div>
-    <div class="kc-desc">
-      Получи бесплатный ключ на <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
-      Ключ сохраняется в браузере и никуда не передаётся кроме Anthropic.
-    </div>
-    <input class="kc-inp" id="kinp" type="password" placeholder="sk-ant-api03-..." autocomplete="off" onkeydown="if(event.key==='Enter')connect()">
-    <div class="kc-err" id="kerr"></div>
-    <button class="kc-btn" onclick="connect()">ПОДКЛЮЧИТЬСЯ →</button>
-    <div class="kc-note">Ключ хранится только в этой вкладке браузера</div>
-  </div>
-</div>
-
-<!-- APP -->
-<div class="app">
-  <header>
-    <div class="hlogo">
-      <div class="hring">⚙️</div>
       <div>
-        <div class="hname">RUSTFORGE AI</div>
-        <div class="htag">Rust Plugin Generator</div>
+        <div class="footer-col-title">Компания</div>
+        <div class="footer-links">
+          <a href="#">О нас</a>
+          <a href="#">Блог</a>
+          <a href="#">Карьера</a>
+          <a href="#">Пресс-кит</a>
+          <a href="#">Контакты</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Поддержка</div>
+        <div class="footer-links">
+          <a href="#">Help Center</a>
+          <a href="#">Сообщество</a>
+          <a href="#">Партнёрство</a>
+          <a href="#">Безопасность</a>
+          <a href="#">GDPR</a>
+        </div>
       </div>
     </div>
-    <div class="hright">
-      <button class="hbtn" onclick="showKey()">🔑 Ключ</button>
-      <div class="online"><i></i>ONLINE</div>
-    </div>
-  </header>
-
-  <div class="msgs" id="msgs">
-    <div class="welcome" id="wlc">
-      <div class="worb">🦀</div>
-      <div class="wtitle">RUSTFORGE AI</div>
-      <div class="wdesc">Загрузи скриншот или фото — напишу полный плагин для Rust 1 в 1. Или просто опиши что нужно текстом.</div>
-      <div class="chips">
-        <div class="chip" onclick="chip(this)">💰 Экономика и магазин</div>
-        <div class="chip" onclick="chip(this)">🚀 Телепортация</div>
-        <div class="chip" onclick="chip(this)">🛡️ Защита базы</div>
-        <div class="chip" onclick="chip(this)">💬 Кастомный чат</div>
-        <div class="chip" onclick="chip(this)">⚔️ PvP статистика</div>
-        <div class="chip" onclick="chip(this)">📦 Кастомный лут</div>
-        <div class="chip" onclick="chip(this)">🏆 Система рейтинга</div>
-        <div class="chip" onclick="chip(this)">🎁 Ежедневные награды</div>
-        <div class="chip" onclick="chip(this)">⚙️ Права и роли</div>
-        <div class="chip" onclick="chip(this)">🗺️ Кастомные ивенты</div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 NeuralMind. Все права защищены.</div>
+      <div class="footer-legal">
+        <a href="#">Конфиденциальность</a>
+        <a href="#">Условия</a>
+        <a href="#">Cookie</a>
       </div>
     </div>
   </div>
+</footer>
 
-  <div class="izone">
-    <div class="istrip" id="strip"></div>
-    <div class="irow">
-      <button class="att" onclick="document.getElementById('fi').click()" title="Прикрепить скриншот">📎</button>
-      <input type="file" id="fi" accept="image/*" multiple onchange="onFiles(this)">
-      <textarea id="ti" placeholder="Опиши плагин или прикрепи скриншот…" rows="1"
-        onkeydown="onKey(event)" oninput="grow(this)"></textarea>
-      <button class="sbtn" id="sb" onclick="send()" disabled>
-        <svg viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2z"/></svg>
-      </button>
-    </div>
-    <div class="hint">Enter — отправить &nbsp;·&nbsp; Shift+Enter — новая строка &nbsp;·&nbsp; 📎 — фото/скриншот</div>
-  </div>
-</div>
-
+<!-- ══════════════════════════════════════════
+   SCRIPTS
+══════════════════════════════════════════ -->
 <script>
-// ── STARS ──
-(()=>{
-  const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-  let W,H,S=[];
-  const rsz=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
-  const init=()=>{rsz();S=[];for(let i=0;i<300;i++)S.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.15,t:Math.random()*6.28,ts:Math.random()*.025+.006,c:['#e8f4ff','#a5b4fc','#7dd3fc','#ffffff','#c4b5fd'][~~(Math.random()*5)]})};
-  const draw=()=>{ctx.clearRect(0,0,W,H);S.forEach(s=>{s.t+=s.ts;ctx.globalAlpha=.08+.7*((1+Math.sin(s.t))/2);ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);ctx.fillStyle=s.c;ctx.fill()});ctx.globalAlpha=1;requestAnimationFrame(draw)};
-  window.addEventListener('resize',init);init();draw();
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function animCursor() {
+  rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+  cursor.style.left = mx+'px'; cursor.style.top = my+'px';
+  ring.style.left   = rx+'px'; ring.style.top  = ry+'px';
+  requestAnimationFrame(animCursor);
 })();
 
-// Auto-connect with pre-filled key
-(()=>{
-  document.getElementById('ks').style.display='none';
-  document.getElementById('sb').disabled=false;
-  document.getElementById('ti').focus();
-})();
+/* ── NAVBAR SCROLL ── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+});
 
-// ── STATE ──
-let KEY='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', hist=[], imgs=[], busy=false;
+/* ── NEURAL CANVAS ── */
+const canvas  = document.getElementById('neural-canvas');
+const ctx     = canvas.getContext('2d');
+let nodes = [], W, H;
 
-const SYS=`Ты — RustForge AI, ведущий эксперт по разработке плагинов для игры Rust (C#, Oxide/uMod).
-
-ЗАДАЧА: По фото, скриншоту или текстовому описанию написать ПОЛНЫЙ, РАБОЧИЙ плагин 1 в 1.
-
-ЕСЛИ ПРИСЛАЛИ ИЗОБРАЖЕНИЕ:
-1. Внимательно изучи скриншот/фото
-2. В 1-2 предложениях опиши что видишь и что будешь реализовывать
-3. Напиши ПОЛНЫЙ плагин под эту механику
-
-ЕСЛИ ПРИСЛАЛИ ТЕКСТ — сразу пиши готовый плагин.
-
-ТРЕБОВАНИЯ К КОДУ:
-- Полный плагин: все using, правильный namespace, class с атрибутами [Info] и [Description]
-- Обязательные секции: Configuration (class PluginConfig), Lang (словарь локализации)
-- Permission система (plugin.permission) где уместно
-- Все хуки Oxide: OnServerInitialized, Init, Unload и нужные игровые хуки
-- Обработка ошибок (try/catch где нужно)
-- Комментарии на русском языке
-- Только production-ready код, никаких заглушек типа // TODO
-
-ФОРМАТ ОТВЕТА:
-1. Краткое описание (если было изображение)
-2. \`\`\`csharp блок с полным кодом
-3. 3-4 строки: как установить и основные команды
-
-Пиши максимально полный и рабочий код.`;
-
-// ── KEY ──
-function connect(){
-  const v=document.getElementById('kinp').value.trim();
-  const err=document.getElementById('kerr');
-  if(!v){err.textContent='Введи API ключ';return}
-  if(!v.startsWith('sk-')){err.textContent='Ключ должен начинаться с sk-ant-api03-...';return}
-  KEY=v;
-  document.getElementById('ks').style.display='none';
-  document.getElementById('sb').disabled=false;
-  document.getElementById('ti').focus();
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
 }
-function showKey(){
-  document.getElementById('kinp').value=KEY||'';
-  document.getElementById('kerr').textContent='';
-  document.getElementById('ks').style.display='flex';
-}
+resize();
+window.addEventListener('resize', () => { resize(); initNodes(); });
 
-// ── FILES ──
-function onFiles(inp){
-  Array.from(inp.files).forEach(f=>{
-    if(!f.type.startsWith('image/'))return;
-    const r=new FileReader();
-    r.onload=e=>{imgs.push({url:e.target.result,type:f.type});renderStrip()};
-    r.readAsDataURL(f);
-  });
-  inp.value='';
-}
-function renderStrip(){
-  const s=document.getElementById('strip');
-  s.innerHTML='';
-  if(imgs.length){
-    s.classList.add('show');
-    imgs.forEach((im,i)=>{
-      const d=document.createElement('div');
-      d.className='thumb';
-      d.innerHTML=`<img src="${im.url}"><button class="thdel" onclick="rmImg(${i})">✕</button>`;
-      s.appendChild(d);
+function initNodes() {
+  nodes = [];
+  const count = Math.floor((W*H)/14000);
+  for (let i=0; i<count; i++) {
+    nodes.push({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4,
+      r: Math.random()*2+1,
+      color: Math.random() > 0.6 ? '#7b5cfa' : '#00e5ff'
     });
-  } else s.classList.remove('show');
-}
-function rmImg(i){imgs.splice(i,1);renderStrip()}
-function chip(el){
-  const t=el.textContent.replace(/^.{1,2}\s/,'').trim();
-  document.getElementById('ti').value='Напиши полный плагин для Rust: '+t;
-  grow(document.getElementById('ti'));
-  send();
-}
-function grow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px'}
-function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
-
-// ── SEND ──
-async function send(){
-  if(busy||!KEY)return;
-  const ti=document.getElementById('ti');
-  const txt=ti.value.trim();
-  const curImgs=[...imgs];
-  if(!txt&&!curImgs.length)return;
-
-  document.getElementById('wlc')?.remove();
-
-  const content=[];
-  curImgs.forEach(im=>{
-    content.push({type:'image',source:{type:'base64',media_type:im.type,data:im.url.split(',')[1]}});
-  });
-  if(txt)content.push({type:'text',text:txt});
-
-  addUserMsg(curImgs,txt);
-  hist.push({role:'user',content});
-  ti.value='';ti.style.height='auto';
-  imgs=[];renderStrip();
-
-  const typ=addTyping();
-  busy=true;
-  document.getElementById('sb').disabled=true;
-
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'content-type':'application/json',
-        'x-api-key':KEY,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:'claude-opus-4-5',
-        max_tokens:4096,
-        system:SYS,
-        messages:hist
-      })
-    });
-
-    const data=await res.json();
-    if(!res.ok){
-      if(res.status===401){showKey();document.getElementById('kerr').textContent='Неверный ключ — проверь и введи заново';}
-      throw new Error(data?.error?.message||'Ошибка '+res.status);
-    }
-
-    const reply=data?.content?.find(b=>b.type==='text')?.text||'';
-    typ.remove();
-    hist.push({role:'assistant',content:reply});
-    addAIMsg(reply);
-  }catch(err){
-    typ.remove();
-    if(!err.message.includes('401'))
-      addAIMsg('Что-то пошло не так: '+err.message);
-  }finally{
-    busy=false;
-    document.getElementById('sb').disabled=false;
   }
 }
+initNodes();
 
-// ── DOM ──
-function addUserMsg(imgs,txt){
-  const m=document.getElementById('msgs');
-  const d=document.createElement('div');
-  d.className='row user';
-  let h='<div class="av">👤</div><div class="bub">';
-  imgs.forEach(im=>h+=`<img class="prev" src="${im.url}">`);
-  if(txt)h+=esc(txt);
-  h+='</div>';
-  d.innerHTML=h;m.appendChild(d);scrl();
-}
-function addAIMsg(txt){
-  const m=document.getElementById('msgs');
-  const d=document.createElement('div');
-  d.className='row ai';
-  d.innerHTML=`<div class="av">⚙️</div><div class="bub">${fmt(txt)}</div>`;
-  m.appendChild(d);scrl();
-}
-function addTyping(){
-  const m=document.getElementById('msgs');
-  const d=document.createElement('div');
-  d.className='trow';
-  d.innerHTML=`<div class="av" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid rgba(0,180,255,.18);background:rgba(0,180,255,.07)">⚙️</div><div class="tbub"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
-  m.appendChild(d);scrl();return d;
-}
-function scrl(){const m=document.getElementById('msgs');m.scrollTop=m.scrollHeight}
-function fmt(t){
-  t=t.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
-    const id='c'+Math.random().toString(36).slice(2,9);
-    const lbl=(lang||'code').toUpperCase();
-    return `<div class="code-top"><span>${lbl}</span><button class="cpbtn" onclick="cp('${id}')">КОПИРОВАТЬ</button></div><pre id="${id}"><code>${esc(code.trim())}</code></pre>`;
+let mouseX = W/2, mouseY = H/2;
+document.addEventListener('mousemove', e => { mouseX=e.clientX; mouseY=e.clientY; });
+
+function drawCanvas() {
+  ctx.clearRect(0,0,W,H);
+  // Update
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x<0||n.x>W) n.vx*=-1;
+    if (n.y<0||n.y>H) n.vy*=-1;
+    // mouse attraction
+    const dx=mouseX-n.x, dy=mouseY-n.y, d=Math.sqrt(dx*dx+dy*dy);
+    if (d<160) { n.vx+=dx/d*0.012; n.vy+=dy/d*0.012; }
+    const spd=Math.sqrt(n.vx*n.vx+n.vy*n.vy);
+    if (spd>0.9){n.vx/=spd*1.1;n.vy/=spd*1.1;}
   });
-  t=t.replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  t=t.replace(/\*(.+?)\*/g,'<em>$1</em>');
-  t=t.replace(/\n/g,'<br>');
-  return t;
+  // Lines
+  for (let i=0;i<nodes.length;i++) {
+    for (let j=i+1;j<nodes.length;j++) {
+      const a=nodes[i], b=nodes[j];
+      const dx=a.x-b.x, dy=a.y-b.y, d=Math.sqrt(dx*dx+dy*dy);
+      if (d<140) {
+        ctx.beginPath();
+        ctx.strokeStyle = a.color;
+        ctx.globalAlpha = (1-d/140)*0.25;
+        ctx.lineWidth = 0.7;
+        ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+        ctx.stroke();
+      }
+    }
+  }
+  // Nodes
+  nodes.forEach(n => {
+    ctx.beginPath();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = n.color;
+    ctx.shadowColor = n.color;
+    ctx.shadowBlur = 8;
+    ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(drawCanvas);
 }
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function cp(id){
-  const el=document.getElementById(id);if(!el)return;
-  navigator.clipboard.writeText(el.innerText).then(()=>{
-    const b=el.previousElementSibling?.querySelector('.cpbtn');
-    if(b){b.textContent='✓ СКОПИРОВАНО';setTimeout(()=>b.textContent='КОПИРОВАТЬ',2000)}
-  }).catch(()=>{const ta=document.createElement('textarea');ta.value=el.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()});
+drawCanvas();
+
+/* ── SCROLL REVEAL ── */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ── CHAT ── */
+const messagesEl = document.getElementById('chat-messages');
+const inputEl    = document.getElementById('chat-input');
+const sendBtn    = document.getElementById('send-btn');
+
+function getTime() {
+  return new Date().toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'});
 }
+
+function addMsg(text, role) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar">${role==='ai'?'🧠':'👤'}</div>
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>
+      <div class="msg-time">${getTime()}</div>
+    </div>`;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function addTyping() {
+  const d = document.createElement('div');
+  d.className = 'msg ai'; d.id = 'typing-msg';
+  d.innerHTML = `<div class="msg-avatar">🧠</div><div class="typing"><span></span><span></span><span></span></div>`;
+  messagesEl.appendChild(d);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function removeTyping() {
+  const t = document.getElementById('typing-msg');
+  if(t) t.remove();
+}
+
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = ''; autoResize(inputEl);
+  addMsg(text, 'user');
+  sendBtn.disabled = true;
+  addTyping();
+  // Hide quick btns after first message
+  document.getElementById('quick-btns').style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Ты — NeuralMind, мощная дружелюбная нейросеть нового поколения. Отвечай чётко, умно и по-русски. Используй эмодзи умеренно. Форматируй код в блоки с обратными кавычками.',
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    const reply = data.content?.[0]?.text || '⚠️ Ошибка получения ответа.';
+    addMsg(reply, 'ai');
+  } catch(e) {
+    removeTyping();
+    addMsg('⚠️ Не удалось подключиться. Проверьте соединение.', 'ai');
+  }
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+function sendQuick(text) {
+  inputEl.value = text;
+  sendMessage();
+}
+
+function clearChat() {
+  messagesEl.innerHTML = '';
+  document.getElementById('quick-btns').style.display = 'flex';
+  addMsg('Диалог очищен. Чем могу помочь? 🚀', 'ai');
+}
+
+function handleKey(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+function autoResize(el) {
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+
+/* ── COUNTER ANIMATION ── */
+function animCount(el, end, suffix='') {
+  let start=0; const dur=2000; const step=dur/60;
+  const inc=end/60;
+  const t=setInterval(()=>{
+    start+=inc; if(start>=end){start=end;clearInterval(t);}
+    el.textContent = Math.round(start)+suffix;
+  },step);
+}
+const cntObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      cntObs.unobserve(e.target);
+      const n=e.target.dataset.num;
+      const s=e.target.dataset.suffix||'';
+      animCount(e.target,parseFloat(n),s);
+    }
+  });
+},{threshold:0.5});
 </script>
 </body>
 </html>
