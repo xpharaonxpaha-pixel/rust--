@@ -14,36 +14,27 @@ html,body{height:100%;overflow:hidden;background:#050811;font-family:'Inter',san
 .b2{width:600px;height:600px;bottom:-200px;right:-150px;background:rgba(0,180,255,.06)}
 .b3{width:400px;height:400px;top:35%;left:35%;background:rgba(240,100,30,.035)}
 .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;max-width:860px;margin:0 auto;padding:0 18px}
-
-/* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:15px 0 12px;border-bottom:1px solid rgba(0,180,255,.1);flex-shrink:0}
 .hlogo{display:flex;align-items:center;gap:11px}
 .hring{width:38px;height:38px;border-radius:50%;border:2px solid rgba(0,200,255,.45);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(0,200,255,.25);animation:hp 3s ease-in-out infinite}
 @keyframes hp{0%,100%{box-shadow:0 0 16px rgba(0,200,255,.25)}50%{box-shadow:0 0 32px rgba(0,200,255,.5)}}
 .hname{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;letter-spacing:.08em;background:linear-gradient(120deg,#00c8ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .htag{font-size:9.5px;color:rgba(100,160,220,.55);letter-spacing:.22em;text-transform:uppercase;margin-top:2px}
-.hright{display:flex;align-items:center;gap:12px}
 .online{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(100,200,130,.8);letter-spacing:.1em}
 .online i{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;display:block;animation:bl 2s ease-in-out infinite}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:.25}}
-
-/* MESSAGES */
 .msgs{flex:1;overflow-y:auto;padding:18px 0 8px;display:flex;flex-direction:column;gap:14px;min-height:0}
 .msgs::-webkit-scrollbar{width:3px}
 .msgs::-webkit-scrollbar-thumb{background:rgba(0,200,255,.15);border-radius:2px}
-
-/* WELCOME */
 .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;gap:16px;animation:fi .7s ease}
 @keyframes fi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .worb{width:82px;height:82px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(0,200,255,.55),rgba(120,50,240,.42),transparent 70%);box-shadow:0 0 40px rgba(0,200,255,.22),0 0 80px rgba(120,50,240,.12);display:flex;align-items:center;justify-content:center;font-size:36px;animation:orb 4s ease-in-out infinite}
-@keyframes orb{0%,100%{transform:translateY(0);box-shadow:0 0 40px rgba(0,200,255,.22)}50%{transform:translateY(-8px);box-shadow:0 0 65px rgba(0,200,255,.42)}}
+@keyframes orb{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .wtitle{font-family:'Orbitron',monospace;font-size:21px;font-weight:900;background:linear-gradient(120deg,#00c8ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.wdesc{font-size:13px;font-weight:300;color:rgba(160,200,240,.6);max-width:390px;line-height:1.8}
+.wdesc{font-size:13px;font-weight:300;color:rgba(160,200,240,.6);max-width:400px;line-height:1.8}
 .chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:2px}
 .chip{background:rgba(0,180,255,.05);border:1px solid rgba(0,180,255,.14);border-radius:20px;padding:6px 14px;font-size:11px;color:rgba(150,205,250,.65);cursor:pointer;transition:.15s;letter-spacing:.03em}
 .chip:hover{background:rgba(0,180,255,.12);border-color:rgba(0,180,255,.38);color:#e2eeff}
-
-/* MESSAGES */
 .row{display:flex;gap:10px;animation:fi .3s ease}
 .row.user{flex-direction:row-reverse}
 .av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid rgba(0,180,255,.2)}
@@ -61,15 +52,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:15p
 .cpbtn:hover{background:rgba(249,115,22,.1)}
 .bub strong{color:#e2eeff;font-weight:500}
 .bub em{color:rgba(160,210,255,.75);font-style:italic}
-
-/* TYPING */
 .trow{display:flex;gap:10px}
 .tbub{background:rgba(8,14,32,.88);border:1px solid rgba(0,180,255,.11);border-radius:4px 12px 12px 12px;padding:14px 19px;display:flex;gap:5px;align-items:center}
-.td{width:6px;height:6px;border-radius:50%;background:#00c8ff;animation:td 1.2s infinite ease-in-out}
+.td{width:6px;height:6px;border-radius:50%;background:#00c8ff;animation:tda 1.2s infinite ease-in-out}
 .td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
-@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.2}30%{transform:translateY(-5px);opacity:1}}
-
-/* INPUT */
+@keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.2}30%{transform:translateY(-5px);opacity:1}}
 .izone{padding-top:10px;padding-bottom:13px;flex-shrink:0}
 .istrip{display:none;gap:7px;margin-bottom:9px;flex-wrap:wrap}
 .istrip.show{display:flex}
@@ -106,16 +93,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:15p
         <div class="htag">Rust Plugin Generator</div>
       </div>
     </div>
-    <div class="hright">
-      <div class="online"><i></i>ONLINE</div>
-    </div>
+    <div class="online"><i></i>ONLINE</div>
   </header>
 
   <div class="msgs" id="msgs">
     <div class="welcome" id="wlc">
       <div class="worb">🦀</div>
       <div class="wtitle">RUSTFORGE AI</div>
-      <div class="wdesc">Загрузи скриншот или фото — напишу полноценный плагин для Rust на C#. Или просто опиши что нужно.</div>
+      <div class="wdesc">Загрузи скриншот или фото — напишу полный плагин для Rust на C#. Или просто опиши что нужно текстом.</div>
       <div class="chips">
         <div class="chip" onclick="chip(this)">💰 Экономика</div>
         <div class="chip" onclick="chip(this)">🚀 Телепортация</div>
@@ -155,26 +140,29 @@ header{display:flex;align-items:center;justify-content:space-between;padding:15p
   window.addEventListener('resize',init);init();draw();
 })();
 
-// ── STATE ──
-let hist=[], imgs=[], busy=false;
+// ── CONFIG ──
+const API_KEY = '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';
 
-const SYS=`Ты — RustForge AI, профессиональный разработчик плагинов для игры Rust (C#, Oxide/uMod).
+const SYS = `Ты — RustForge AI, профессиональный разработчик плагинов для игры Rust (C#, Oxide/uMod).
 
 Когда пользователь присылает изображение (скриншот, фото):
-1. Опиши в 1-2 предложениях что видишь на изображении
+1. Опиши в 1-2 предложениях что видишь
 2. Напиши ПОЛНЫЙ рабочий плагин под эту механику
 
 Когда пишет текстом — сразу пиши плагин.
 
 Требования к коду:
-- Полный плагин: using, namespace, class, все хуки Oxide
+- Полный плагин: using, namespace, class, хуки Oxide
 - Config и Lang секции обязательны
 - Permission система где уместно
 - Комментарии на русском
 - Только рабочий production-ready код
-- Код оборачивай в \`\`\`csharp блоки
+- Код в блоке \`\`\`csharp
 
 После кода — 2-3 строки как установить.`;
+
+// ── STATE ──
+let hist=[], imgs=[], busy=false;
 
 // ── FILES ──
 function onFiles(inp){
@@ -202,7 +190,7 @@ function renderStrip(){
 function rmImg(i){imgs.splice(i,1);renderStrip()}
 function chip(el){
   const t=el.textContent.replace(/^.\s/,'').trim();
-  document.getElementById('ti').value='Напиши полный плагин: '+t;
+  document.getElementById('ti').value='Напиши полный плагин для Rust: '+t;
   grow(document.getElementById('ti'));
   send();
 }
@@ -219,7 +207,6 @@ async function send(){
 
   document.getElementById('wlc')?.remove();
 
-  // Build API content
   const content=[];
   curImgs.forEach(im=>{
     content.push({type:'image',source:{type:'base64',media_type:im.type,data:im.url.split(',')[1]}});
@@ -228,7 +215,6 @@ async function send(){
 
   addUserMsg(curImgs,txt);
   hist.push({role:'user',content});
-
   ti.value='';ti.style.height='auto';
   imgs=[];renderStrip();
 
@@ -241,6 +227,7 @@ async function send(){
       method:'POST',
       headers:{
         'content-type':'application/json',
+        'x-api-key': API_KEY,
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
@@ -261,7 +248,7 @@ async function send(){
     addAIMsg(reply);
   }catch(err){
     typ.remove();
-    addAIMsg('⚠️ '+err.message);
+    addAIMsg('Ошибка: '+err.message+'\n\nПроверьте правильность API ключа на console.anthropic.com');
   }finally{
     busy=false;
     document.getElementById('sb').disabled=false;
@@ -277,8 +264,7 @@ function addUserMsg(imgs,txt){
   imgs.forEach(im=>h+=`<img class="prev" src="${im.url}">`);
   if(txt)h+=esc(txt);
   h+='</div>';
-  d.innerHTML=h;
-  m.appendChild(d);scrl();
+  d.innerHTML=h;m.appendChild(d);scrl();
 }
 function addAIMsg(txt){
   const m=document.getElementById('msgs');
@@ -295,7 +281,6 @@ function addTyping(){
   m.appendChild(d);scrl();return d;
 }
 function scrl(){const m=document.getElementById('msgs');m.scrollTop=m.scrollHeight}
-
 function fmt(t){
   t=t.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
     const id='c'+Math.random().toString(36).slice(2,9);
@@ -316,7 +301,6 @@ function cp(id){
     if(b){b.textContent='✓ ГОТОВО';setTimeout(()=>b.textContent='КОПИРОВАТЬ',2000)}
   }).catch(()=>{const ta=document.createElement('textarea');ta.value=el.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()});
 }
-
 window.addEventListener('load',()=>document.getElementById('ti').focus());
 </script>
 </body>
